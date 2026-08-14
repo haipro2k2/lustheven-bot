@@ -1,9 +1,23 @@
 import os
 import random
+import threading
+from http.server import HTTPServer, BaseHTTPRequestHandler
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
-# Lấy cấu hình từ môi trường
+# --- 1. CODE LỪA RENDER (Tạo web server giả để dùng Free) ---
+class HealthCheckHandler(BaseHTTPRequestHandler):
+    def do_GET(self):
+        self.send_response(200)
+        self.end_headers()
+        self.wfile.write(b"Bot is running!")
+
+def run_dummy_server():
+    port = int(os.environ.get("PORT", 8080))
+    server = HTTPServer(('0.0.0.0', port), HealthCheckHandler)
+    server.serve_forever()
+
+# --- 2. CẤU HÌNH BOT TELEGRAM ---
 BOT_TOKEN = os.environ.get("BOT_TOKEN")
 ADMIN_ID = int(os.environ.get("ADMIN_ID", "0"))
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "")
@@ -33,7 +47,7 @@ TEXTS = {
                    "🔹 *Payment:* {pay}\n"
                    "───────────────\n"
                    "👇 Click the button below to chat with Admin and complete payment!",
-        'btn_chat': "💬 Chat with Admin Now",
+        'btn_chat': "💬 Click to chat with Admin",
         'pkg_1m': "1 Month Plan - $10",
         'pkg_1y': "1 Year Plan - $80",
         'pay_bank': "🏦 Bank Transfer",
@@ -95,7 +109,7 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         user = query.from_user
         username_str = f"@{user.username}" if user.username else f"ID: {user.id}"
 
-        # Báo cho Admin
+        # Thông báo cho Admin
         admin_alert = (
             f"🚨 *ĐƠN HÀNG MỚI #{order_id}*\n"
             f"👤 Khách hàng: {user.full_name} ({username_str})\n"
@@ -118,6 +132,10 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         await query.edit_message_text(msg_text, reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
 if __name__ == '__main__':
+    # Chạy web server giả ở luồng phụ
+    threading.Thread(target=run_dummy_server, daemon=True).start()
+    
+    # Chạy Bot
     app = ApplicationBuilder().token(BOT_TOKEN).build()
     app.add_handler(CommandHandler("start", start))
     app.add_handler(CallbackQueryHandler(handle_buttons))
