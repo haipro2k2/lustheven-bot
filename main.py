@@ -1,5 +1,6 @@
 import os
 import asyncio
+from urllib.parse import quote
 from flask import Flask, request
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
@@ -10,7 +11,7 @@ app = Flask(__name__)
 # CẤU HÌNH THÔNG TIN BOT
 # ==========================================
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "8507992829:AAE1e_c6MFQlEnggmd6LUvI-Vo27oPeeRco")
-ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "LHeaven_Admin")
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "LHeaven_Admin").strip().lstrip('@')
 ADMIN_ID = os.environ.get("ADMIN_ID", "1765008581")
 
 # Địa chỉ ví Crypto
@@ -140,7 +141,10 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == 'pay_card':
         lang = context.user_data.get('lang', 'en')
         t = TEXTS[lang]
-        chat_url = f"https://t.me/{ADMIN_USERNAME}?text={t['invoice_card_text'].replace(' ', '%20')}"
+        
+        encoded_text = quote(t['invoice_card_text'])
+        chat_url = f"https://t.me/{ADMIN_USERNAME}?text={encoded_text}"
+        
         keyboard = [
             [InlineKeyboardButton(t['btn_request_invoice'], url=chat_url)],
             [InlineKeyboardButton(t['btn_back'], callback_data='pkg_11')]
@@ -171,7 +175,8 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             network_name, wallet, msg_template = "Bitcoin", WALLET_BTC, t['btc_msg']
 
         chat_text = t['invoice_crypto_text'].format(network=network_name)
-        chat_url = f"https://t.me/{ADMIN_USERNAME}?text={chat_text.replace(' ', '%20')}"
+        encoded_text = quote(chat_text)
+        chat_url = f"https://t.me/{ADMIN_USERNAME}?text={encoded_text}"
 
         keyboard = [
             [InlineKeyboardButton(t['btn_contact_manager'], url=chat_url)],
