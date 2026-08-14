@@ -7,22 +7,19 @@ from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandle
 app = Flask(__name__)
 
 # ==========================================
-# THÔNG TIN ĐÃ CẤU HÌNH SẴN CHO BẠN
+# CẤU HÌNH THÔNG TIN BOT
 # ==========================================
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "8507992829:AAE1e_c6MFQlEnggmd6LUvI-Vo27oPeeRco")
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "LHeaven_Admin")
 ADMIN_ID = os.environ.get("ADMIN_ID", "1765008581")
 
-# Ví Crypto
+# Địa chỉ ví Crypto
 WALLET_USDT_TRC20 = "TSAmM5hX9bsNrHiMGHvfhJMNmxBpu9FHW6"
 WALLET_USDT_BSC = "0x3cd89f6fe2a4159cddf559a56b9d70ac2225d1ec"
 WALLET_BTC = "1Jucsph6cpJ7asnCeuM9qydqmd34xaNgwZ"
 
-# Khởi tạo ứng dụng Bot
-ptb_app = ApplicationBuilder().token(BOT_TOKEN).build()
-
 # ==========================================
-# BỘ NGÔN NGỮ chuẩn 4 TIẾNG (EN, ES, FR, PT)
+# BỘ NGÔN NGỮ chuẩn 4 TIẾNG
 # ==========================================
 TEXTS = {
     'en': {
@@ -103,25 +100,14 @@ TEXTS = {
     }
 }
 
-# --- LỆNH /START ---
+# --- CÁC HÀM XỬ LÝ LOGIC BOT ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
-        [
-            InlineKeyboardButton("English", callback_data='lang_en'),
-            InlineKeyboardButton("Español", callback_data='lang_es')
-        ],
-        [
-            InlineKeyboardButton("Français", callback_data='lang_fr'),
-            InlineKeyboardButton("Português", callback_data='lang_pt')
-        ]
+        [InlineKeyboardButton("English", callback_data='lang_en'), InlineKeyboardButton("Español", callback_data='lang_es')],
+        [InlineKeyboardButton("Français", callback_data='lang_fr'), InlineKeyboardButton("Português", callback_data='lang_pt')]
     ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    await update.message.reply_text(
-        "Choose your language",
-        reply_markup=reply_markup
-    )
+    await update.message.reply_text("Choose your language", reply_markup=InlineKeyboardMarkup(keyboard))
 
-# --- XỬ LÝ NÚT BẤM ---
 async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
@@ -132,70 +118,44 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         lang = data.replace('lang_', '')
         context.user_data['lang'] = lang
         t = TEXTS[lang]
-
         keyboard = [
             [InlineKeyboardButton(t['btn_annual'], callback_data='pkg_45')],
             [InlineKeyboardButton(t['btn_monthly'], callback_data='pkg_11')],
             [InlineKeyboardButton(t['btn_overview'], url=f"https://t.me/{ADMIN_USERNAME}")]
         ]
-        await query.edit_message_text(
-            t['intro'].format(name=user_name),
-            reply_markup=InlineKeyboardMarkup(keyboard),
-            parse_mode='Markdown'
-        )
+        await query.edit_message_text(t['intro'].format(name=user_name), reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
     elif data.startswith('pkg_'):
         lang = context.user_data.get('lang', 'en')
         t = TEXTS[lang]
-        amount = "45" if "45" in data else "11"
-        context.user_data['amount'] = amount
-
+        context.user_data['amount'] = "45" if "45" in data else "11"
         keyboard = [
             [InlineKeyboardButton(t['btn_card'], callback_data='pay_card')],
             [InlineKeyboardButton(t['btn_stars'], callback_data='pay_stars')],
             [InlineKeyboardButton(t['btn_crypto'], callback_data='pay_crypto')],
             [InlineKeyboardButton(t['btn_back'], callback_data=f"lang_{lang}")]
         ]
-        await query.edit_message_text(
-            t['select_pay'],
-            reply_markup=InlineKeyboardMarkup(keyboard),
-            parse_mode='Markdown'
-        )
+        await query.edit_message_text(t['select_pay'], reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
     elif data == 'pay_card':
         lang = context.user_data.get('lang', 'en')
         t = TEXTS[lang]
-        
         chat_url = f"https://t.me/{ADMIN_USERNAME}?text={t['invoice_card_text'].replace(' ', '%20')}"
         keyboard = [
             [InlineKeyboardButton(t['btn_request_invoice'], url=chat_url)],
             [InlineKeyboardButton(t['btn_back'], callback_data='pkg_11')]
         ]
-        await query.edit_message_text(
-            t['card_msg'],
-            reply_markup=InlineKeyboardMarkup(keyboard),
-            parse_mode='Markdown'
-        )
+        await query.edit_message_text(t['card_msg'], reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
     elif data == 'pay_crypto':
         lang = context.user_data.get('lang', 'en')
         t = TEXTS[lang]
-
         keyboard = [
-            [
-                InlineKeyboardButton("USDT (TRC20)", callback_data='coin_trc20'),
-                InlineKeyboardButton("USDT (BSC)", callback_data='coin_bsc')
-            ],
-            [
-                InlineKeyboardButton("BTC", callback_data='coin_btc')
-            ],
+            [InlineKeyboardButton("USDT (TRC20)", callback_data='coin_trc20'), InlineKeyboardButton("USDT (BSC)", callback_data='coin_bsc')],
+            [InlineKeyboardButton("BTC", callback_data='coin_btc')],
             [InlineKeyboardButton(t['btn_back'], callback_data='pkg_11')]
         ]
-        await query.edit_message_text(
-            t['select_crypto'],
-            reply_markup=InlineKeyboardMarkup(keyboard),
-            parse_mode='Markdown'
-        )
+        await query.edit_message_text(t['select_crypto'], reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
     elif data.startswith('coin_'):
         lang = context.user_data.get('lang', 'en')
@@ -204,17 +164,11 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         coin = data.replace('coin_', '')
 
         if coin == 'trc20':
-            network_name = "TRC20"
-            wallet = WALLET_USDT_TRC20
-            msg_template = t['crypto_msg']
+            network_name, wallet, msg_template = "TRC20", WALLET_USDT_TRC20, t['crypto_msg']
         elif coin == 'bsc':
-            network_name = "BEP20 / BSC"
-            wallet = WALLET_USDT_BSC
-            msg_template = t['crypto_msg']
+            network_name, wallet, msg_template = "BEP20 / BSC", WALLET_USDT_BSC, t['crypto_msg']
         else:
-            network_name = "Bitcoin"
-            wallet = WALLET_BTC
-            msg_template = t['btc_msg']
+            network_name, wallet, msg_template = "Bitcoin", WALLET_BTC, t['btc_msg']
 
         chat_text = t['invoice_crypto_text'].format(network=network_name)
         chat_url = f"https://t.me/{ADMIN_USERNAME}?text={chat_text.replace(' ', '%20')}"
@@ -223,32 +177,31 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton(t['btn_contact_manager'], url=chat_url)],
             [InlineKeyboardButton(t['btn_back'], callback_data='pay_crypto')]
         ]
-        
-        display_msg = msg_template.format(amount=amount, network=network_name, wallet=wallet)
-        
-        await query.edit_message_text(
-            display_msg,
-            reply_markup=InlineKeyboardMarkup(keyboard),
-            parse_mode='Markdown'
-        )
-
-# Đăng ký Handlers
-ptb_app.add_handler(CommandHandler("start", start))
-ptb_app.add_handler(CallbackQueryHandler(handle_buttons))
+        await query.edit_message_text(msg_template.format(amount=amount, network=network_name, wallet=wallet), reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
 # ==========================================
-# VERCEL WEBHOOK ROUTE
+# KHỞI TẠO BOT DẠNG HÀM VERCEL WEBHOOK
 # ==========================================
+async def process_update_async(update_data):
+    ptb_app = ApplicationBuilder().token(BOT_TOKEN).build()
+    ptb_app.add_handler(CommandHandler("start", start))
+    ptb_app.add_handler(CallbackQueryHandler(handle_buttons))
+    
+    async with ptb_app:
+        await ptb_app.initialize()
+        update = Update.de_json(update_data, ptb_app.bot)
+        await ptb_app.process_update(update)
+
 @app.route("/", methods=["POST"])
 def webhook():
     if request.method == "POST":
-        update = Update.de_json(request.get_json(force=True), ptb_app.bot)
-        
-        loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(loop)
-        loop.run_until_complete(ptb_app.process_update(update))
-        
-        return "OK", 200
+        try:
+            update_data = request.get_json(force=True)
+            asyncio.run(process_update_async(update_data))
+            return "OK", 200
+        except Exception as e:
+            print(f"Error handling update: {e}")
+            return "Error", 500
     return "Bad Request", 400
 
 @app.route("/", methods=["GET"])
