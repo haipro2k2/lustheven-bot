@@ -1,19 +1,25 @@
 import os
-import random
+import asyncio
+from flask import Flask, request
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
 from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
 
-# ==========================================
-# CẤU HÌNH THÔNG TIN CỦA BẠN TẠI ĐÂY
-# ==========================================
-BOT_TOKEN = "8507992829:AAE1e_c6MFQlEnggmd6LUvI-Vo27oPeeRco"
-ADMIN_USERNAME = "LHeaven_Admin"  # Username Telegram không có dấu @
+app = Flask(__name__)
 
-# Địa chỉ ví Crypto của bạn
+# ==========================================
+# THÔNG TIN ĐÃ CẤU HÌNH SẴN CHO BẠN
+# ==========================================
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "8507992829:AAE1e_c6MFQlEnggmd6LUvI-Vo27oPeeRco")
+ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "LHeaven_Admin")
+ADMIN_ID = os.environ.get("ADMIN_ID", "1765008581")
+
+# Ví Crypto
 WALLET_USDT_TRC20 = "TSAmM5hX9bsNrHiMGHvfhJMNmxBpu9FHW6"
 WALLET_USDT_BSC = "0x3cd89f6fe2a4159cddf559a56b9d70ac2225d1ec"
 WALLET_BTC = "1Jucsph6cpJ7asnCeuM9qydqmd34xaNgwZ"
 
+# Khởi tạo ứng dụng Bot
+ptb_app = ApplicationBuilder().token(BOT_TOKEN).build()
 
 # ==========================================
 # BỘ NGÔN NGỮ chuẩn 4 TIẾNG (EN, ES, FR, PT)
@@ -97,7 +103,7 @@ TEXTS = {
     }
 }
 
-# --- HÀM KHỞI ĐỘNG LỆNH /START ---
+# --- LỆNH /START ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     keyboard = [
         [
@@ -115,14 +121,13 @@ async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
         reply_markup=reply_markup
     )
 
-# --- HÀM XỬ LÝ CÁC NÚT BẤM (CALLBACK) ---
+# --- XỬ LÝ NÚT BẤM ---
 async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     data = query.data
     user_name = query.from_user.first_name
 
-    # 1. Chọn Ngôn ngữ
     if data.startswith('lang_'):
         lang = data.replace('lang_', '')
         context.user_data['lang'] = lang
@@ -139,7 +144,6 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode='Markdown'
         )
 
-    # 2. Chọn Gói (45$ hoặc 11$)
     elif data.startswith('pkg_'):
         lang = context.user_data.get('lang', 'en')
         t = TEXTS[lang]
@@ -158,7 +162,6 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode='Markdown'
         )
 
-    # 3. Thanh toán bằng Thẻ / Apple Pay
     elif data == 'pay_card':
         lang = context.user_data.get('lang', 'en')
         t = TEXTS[lang]
@@ -174,7 +177,6 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode='Markdown'
         )
 
-    # 4. Thanh toán bằng Crypto
     elif data == 'pay_crypto':
         lang = context.user_data.get('lang', 'en')
         t = TEXTS[lang]
@@ -195,7 +197,6 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode='Markdown'
         )
 
-    # 5. Chi tiết ví Crypto (TRC20, BSC, BTC)
     elif data.startswith('coin_'):
         lang = context.user_data.get('lang', 'en')
         t = TEXTS[lang]
@@ -210,7 +211,7 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             network_name = "BEP20 / BSC"
             wallet = WALLET_USDT_BSC
             msg_template = t['crypto_msg']
-        else:  # BTC
+        else:
             network_name = "Bitcoin"
             wallet = WALLET_BTC
             msg_template = t['btc_msg']
@@ -231,10 +232,25 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             parse_mode='Markdown'
         )
 
-# --- CHẠY CHƯƠNG TRÌNH ---
-if __name__ == '__main__':
-    app = ApplicationBuilder().token(BOT_TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(CallbackQueryHandler(handle_buttons))
-    print("Bot đang chạy...")
-    app.run_polling()
+# Đăng ký Handlers
+ptb_app.add_handler(CommandHandler("start", start))
+ptb_app.add_handler(CallbackQueryHandler(handle_buttons))
+
+# ==========================================
+# VERCEL WEBHOOK ROUTE
+# ==========================================
+@app.route("/", methods=["POST"])
+def webhook():
+    if request.method == "POST":
+        update = Update.de_json(request.get_json(force=True), ptb_app.bot)
+        
+        loop = asyncio.new_event_loop()
+        asyncio.set_event_loop(loop)
+        loop.run_until_complete(ptb_app.process_update(update))
+        
+        return "OK", 200
+    return "Bad Request", 400
+
+@app.route("/", methods=["GET"])
+def index():
+    return "Bot Telegram đang chạy mượt mà trên Vercel!", 200
