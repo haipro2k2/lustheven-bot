@@ -14,13 +14,8 @@ BOT_TOKEN = os.environ.get("BOT_TOKEN", "8507992829:AAE1e_c6MFQlEnggmd6LUvI-Vo27
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "LHeaven_Admin").strip().lstrip('@')
 ADMIN_ID = os.environ.get("ADMIN_ID", "1765008581")
 
-# Địa chỉ ví Crypto
-WALLET_USDT_TRC20 = "TSAmM5hX9bsNrHiMGHvfhJMNmxBpu9FHW6"
-WALLET_USDT_BSC = "0x3cd89f6fe2a4159cddf559a56b9d70ac2225d1ec"
-WALLET_BTC = "1Jucsph6cpJ7asnCeuM9qydqmd34xaNgwZ"
-
 # ==========================================
-# BỘ NGÔN NGỮ CHUẨN 4 TIẾNG (ĐÃ THÊM {name})
+# BỘ NGÔN NGỮ CHUẨN 4 TIẾNG (ĐÃ GIẢM BỚT BƯỚC)
 # ==========================================
 TEXTS = {
     'en': {
@@ -40,17 +35,14 @@ TEXTS = {
         'btn_overview': "View the channel overview",
         'select_pay': "Choose a payment method",
         'btn_card': "💳 Apple Pay/Card",
-        'btn_stars': "⭐ Telegram Stars",
         'btn_crypto': "🏴‍☠️ Crypto",
         'btn_back': "Back",
-        'select_crypto': "Choose your crypto / network",
-        'card_msg': "*Click Request Invoice*\n\nOur manager will then send you instructions for payment by card",
+        'card_msg': "*Click Request Invoice*\n\nOur manager will send you payment instructions for Card/Apple Pay.",
+        'crypto_msg': "*Click Contact Manager*\n\nOur manager will provide you with the crypto deposit address (USDT / BTC) and instructions.",
         'btn_request_invoice': "Request Invoice ↗",
-        'crypto_msg': "Send *{amount} USDT - Network {network}*, after payment contact our manager and she'll send you an invite to the premium channel\n\n`{wallet}`",
-        'btc_msg': "Send *{amount}$ in BTC*, after payment contact our manager and she'll send you an invite to the premium channel\n\n`{wallet}`",
-        'btn_contact_manager': "Contact manager ↗",
-        'invoice_card_text': "I want to pay by card 💳",
-        'invoice_crypto_text': "I sent payment ({network}), please check!",
+        'btn_contact_manager': "Contact Manager ↗",
+        'invoice_card_text': "I want to pay by Card 💳",
+        'invoice_crypto_text': "I want to pay by Crypto 🏴‍☠️",
     },
     'es': {
         'intro': (
@@ -69,17 +61,14 @@ TEXTS = {
         'btn_overview': "Ver resumen del canal",
         'select_pay': "Elige un método de pago",
         'btn_card': "💳 Apple Pay/Tarjeta",
-        'btn_stars': "⭐ Telegram Stars",
         'btn_crypto': "🏴‍☠️ Criptomonedas",
         'btn_back': "Atrás",
-        'select_crypto': "Elige tu criptomoneda / red",
-        'card_msg': "*Haz clic en Solicitar Factura*\n\nNuestro administrador te enviará las instrucciones para pagar con tarjeta",
+        'card_msg': "*Haz clic en Solicitar Factura*\n\nNuestro administrador te enviará las instrucciones de pago con tarjeta.",
+        'crypto_msg': "*Haz clic en Contactar Administrador*\n\nNuestro administrador te proporcionará la dirección de depósito cripto (USDT / BTC) y las instrucciones.",
         'btn_request_invoice': "Solicitar Factura ↗",
-        'crypto_msg': "Envía *{amount} USDT - Red {network}*, después del pago contacta a nuestro administrador para recibir tu invitación al canal premium\n\n`{wallet}`",
-        'btc_msg': "Envía *{amount}$ en BTC*, después del pago contacta a nuestro administrador para recibir tu invitación al canal premium\n\n`{wallet}`",
         'btn_contact_manager': "Contactar Administrador ↗",
         'invoice_card_text': "Quiero pagar con tarjeta 💳",
-        'invoice_crypto_text': "¡He enviado el pago ({network}), por favor verificar!",
+        'invoice_crypto_text': "Quiero pagar con Criptomonedas 🏴‍☠️",
     },
     'fr': {
         'intro': (
@@ -98,17 +87,14 @@ TEXTS = {
         'btn_overview': "Aperçu du canal",
         'select_pay': "Choisissez un mode de paiement",
         'btn_card': "💳 Apple Pay/Carte",
-        'btn_stars': "⭐ Telegram Stars",
         'btn_crypto': "🏴‍☠️ Cryptomonnaie",
         'btn_back': "Retour",
-        'select_crypto': "Choisissez votre cryptomonnaie / réseau",
-        'card_msg': "*Cliquez sur Demander la facture*\n\nNotre responsable vous enverra les instructions pour le paiement par carte",
+        'card_msg': "*Cliquez sur Demander la facture*\n\nNotre responsable vous enverra les instructions pour le paiement par carte.",
+        'crypto_msg': "*Cliquez sur Contacter le responsable*\n\nNotre responsable vous fournira l'adresse de dépôt crypto (USDT / BTC) et les instructions.",
         'btn_request_invoice': "Demander la facture ↗",
-        'crypto_msg': "Envoyez *{amount} USDT - Réseau {network}*, après le paiement contactez notre responsable pour recevoir votre invitation\n\n`{wallet}`",
-        'btc_msg': "Envoyez *{amount}$ en BTC*, après le paiement contactez notre responsable pour recevoir votre invitation\n\n`{wallet}`",
         'btn_contact_manager': "Contacter le responsable ↗",
         'invoice_card_text': "Je souhaite payer par carte 💳",
-        'invoice_crypto_text': "J'ai envoyé le paiement ({network}), veuillez vérifier !",
+        'invoice_crypto_text': "Je souhaite payer par Cryptomonnaie 🏴‍☠️",
     },
     'pt': {
         'intro': (
@@ -127,17 +113,14 @@ TEXTS = {
         'btn_overview': "Ver visão geral do canal",
         'select_pay': "Escolha uma forma de pagamento",
         'btn_card': "💳 Apple Pay/Cartão",
-        'btn_stars': "⭐ Telegram Stars",
         'btn_crypto': "🏴‍☠️ Cripto",
         'btn_back': "Voltar",
-        'select_crypto': "Escolha sua criptomoeda / rede",
-        'card_msg': "*Clique em Solicitar Fatura*\n\nNosso gerente enviará as instruções para pagamento via cartão",
+        'card_msg': "*Clique em Solicitar Fatura*\n\nNosso gerente enviará as instruções para pagamento via cartão.",
+        'crypto_msg': "*Clique em Falar com Gerente*\n\nNosso gerente fornecerá o endereço para depósito em cripto (USDT / BTC) e as instruções.",
         'btn_request_invoice': "Solicitar Fatura ↗",
-        'crypto_msg': "Envie *{amount} USDT - Rede {network}*, após o pagamento entre em contato com nosso gerente para receber o convite\n\n`{wallet}`",
-        'btc_msg': "Envie *{amount}$ em BTC*, após o pagamento entre em contato com nosso gerente para receber o convite\n\n`{wallet}`",
         'btn_contact_manager': "Falar com Gerente ↗",
         'invoice_card_text': "Quero pagar via cartão 💳",
-        'invoice_crypto_text': "Enviei o pagamento ({network}), por favor verificar!",
+        'invoice_crypto_text': "Quero pagar via Cripto 🏴‍☠️",
     }
 }
 
@@ -154,7 +137,6 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     data = query.data
 
-    # Lấy tên của người bấm nút (nếu không có tên thì để mặc định là 'there')
     user_name = query.from_user.first_name if query.from_user and query.from_user.first_name else "there"
 
     if data.startswith('lang_'):
@@ -166,7 +148,6 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton(t['btn_monthly'], callback_data='pkg_11')],
             [InlineKeyboardButton(t['btn_overview'], url=f"https://t.me/{ADMIN_USERNAME}")]
         ]
-        # ĐÃ SỬA: Thêm .format(name=user_name) để thay {name} bằng tên thật
         await query.edit_message_text(t['intro'].format(name=user_name), reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
     elif data.startswith('pkg_'):
@@ -175,7 +156,6 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         context.user_data['amount'] = "45" if "45" in data else "11"
         keyboard = [
             [InlineKeyboardButton(t['btn_card'], callback_data='pay_card')],
-            [InlineKeyboardButton(t['btn_stars'], callback_data='pay_stars')],
             [InlineKeyboardButton(t['btn_crypto'], callback_data='pay_crypto')],
             [InlineKeyboardButton(t['btn_back'], callback_data=f"lang_{lang}")]
         ]
@@ -184,48 +164,30 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     elif data == 'pay_card':
         lang = context.user_data.get('lang', 'en')
         t = TEXTS[lang]
+        amount = context.user_data.get('amount', '11')
         
-        encoded_text = quote(t['invoice_card_text'])
+        encoded_text = quote(f"{t['invoice_card_text']} (${amount})")
         chat_url = f"https://t.me/{ADMIN_USERNAME}?text={encoded_text}"
         
         keyboard = [
             [InlineKeyboardButton(t['btn_request_invoice'], url=chat_url)],
-            [InlineKeyboardButton(t['btn_back'], callback_data='pkg_11')]
+            [InlineKeyboardButton(t['btn_back'], callback_data='pkg_' + amount)]
         ]
         await query.edit_message_text(t['card_msg'], reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
     elif data == 'pay_crypto':
         lang = context.user_data.get('lang', 'en')
         t = TEXTS[lang]
-        keyboard = [
-            [InlineKeyboardButton("USDT (TRC20)", callback_data='coin_trc20'), InlineKeyboardButton("USDT (BSC)", callback_data='coin_bsc')],
-            [InlineKeyboardButton("BTC", callback_data='coin_btc')],
-            [InlineKeyboardButton(t['btn_back'], callback_data='pkg_11')]
-        ]
-        await query.edit_message_text(t['select_crypto'], reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
-
-    elif data.startswith('coin_'):
-        lang = context.user_data.get('lang', 'en')
-        t = TEXTS[lang]
         amount = context.user_data.get('amount', '11')
-        coin = data.replace('coin_', '')
 
-        if coin == 'trc20':
-            network_name, wallet, msg_template = "TRC20", WALLET_USDT_TRC20, t['crypto_msg']
-        elif coin == 'bsc':
-            network_name, wallet, msg_template = "BEP20 / BSC", WALLET_USDT_BSC, t['crypto_msg']
-        else:
-            network_name, wallet, msg_template = "Bitcoin", WALLET_BTC, t['btc_msg']
-
-        chat_text = t['invoice_crypto_text'].format(network=network_name)
-        encoded_text = quote(chat_text)
+        encoded_text = quote(f"{t['invoice_crypto_text']} (${amount})")
         chat_url = f"https://t.me/{ADMIN_USERNAME}?text={encoded_text}"
 
         keyboard = [
             [InlineKeyboardButton(t['btn_contact_manager'], url=chat_url)],
-            [InlineKeyboardButton(t['btn_back'], callback_data='pay_crypto')]
+            [InlineKeyboardButton(t['btn_back'], callback_data='pkg_' + amount)]
         ]
-        await query.edit_message_text(msg_template.format(amount=amount, network=network_name, wallet=wallet), reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+        await query.edit_message_text(t['crypto_msg'], reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
 # ==========================================
 # KHỞI TẠO BOT DẠNG HÀM VERCEL WEBHOOK
