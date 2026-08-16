@@ -20,12 +20,12 @@ WALLET_USDT_BSC = "0x3cd89f6fe2a4159cddf559a56b9d70ac2225d1ec"
 WALLET_BTC = "1Jucsph6cpJ7asnCeuM9qydqmd34xaNgwZ"
 
 # ==========================================
-# BỘ NGÔN NGỮ CHUẨN 4 TIẾNG (ĐÃ CẬP NHẬT THEO ẢNH)
+# BỘ NGÔN NGỮ CHUẨN 4 TIẾNG (ĐÃ THÊM {name})
 # ==========================================
 TEXTS = {
     'en': {
         'intro': (
-            "Hello, {name} 👋\n\n Our Premium channel features leaked videos of the most beautiful girls from OnlyFans / Artistic Nudity Photography "
+            "Hello, {name} 👋\n\nOur Premium channel features leaked videos of the most beautiful girls from OnlyFans / Artistic Nudity Photography "
             "(College students, stage actresses, freelance fashion models)\n\n"
             "Subscription package includes:\n\n"
             "One-time purchase for lifetime access\n\n"
@@ -54,7 +54,7 @@ TEXTS = {
     },
     'es': {
         'intro': (
-            "Nuestro canal Premium presenta videos filtrados de las chicas más bellas de OnlyFans / Fotografía Artística de Desnudez "
+            "Hola, {name} 👋\n\nNuestro canal Premium presenta videos filtrados de las chicas más bellas de OnlyFans / Fotografía Artística de Desnudez "
             "(estudiantes universitarias, actrices de teatro, modelos independientes).\n\n"
             "El paquete de suscripción incluye:\n\n"
             "Compra única para acceso de por vida\n\n"
@@ -83,7 +83,7 @@ TEXTS = {
     },
     'fr': {
         'intro': (
-            "Notre canal Premium propose des vidéos d'infiltration des plus belles filles d'OnlyFans / Photographie de Nu Artistique "
+            "Bonjour, {name} 👋\n\nNotre canal Premium propose des vidéos d'infiltration des plus belles filles d'OnlyFans / Photographie de Nu Artistique "
             "(étudiantes universitaires, actrices de théâtre, mannequins indépendants).\n\n"
             "Le forfait d'abonnement comprend :\n\n"
             "Achat unique pour un accès à vie\n\n"
@@ -112,7 +112,7 @@ TEXTS = {
     },
     'pt': {
         'intro': (
-            "Nosso canal Premium apresenta vídeos vazados das garotas mais lindas do OnlyFans / Fotografia Artística de Nu "
+            "Olá, {name} 👋\n\nNosso canal Premium apresenta vídeos vazados das garotas mais lindas do OnlyFans / Fotografia Artística de Nu "
             "(estudantes universitárias, atrizes de teatro, modelos independentes).\n\n"
             "O pacote de assinatura inclui:\n\n"
             "Compra única para acesso vitalício\n\n"
@@ -154,6 +154,9 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await query.answer()
     data = query.data
 
+    # Lấy tên của người bấm nút (nếu không có tên thì để mặc định là 'there')
+    user_name = query.from_user.first_name if query.from_user and query.from_user.first_name else "there"
+
     if data.startswith('lang_'):
         lang = data.replace('lang_', '')
         context.user_data['lang'] = lang
@@ -163,7 +166,8 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton(t['btn_monthly'], callback_data='pkg_11')],
             [InlineKeyboardButton(t['btn_overview'], url=f"https://t.me/{ADMIN_USERNAME}")]
         ]
-        await query.edit_message_text(t['intro'], reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+        # ĐÃ SỬA: Thêm .format(name=user_name) để thay {name} bằng tên thật
+        await query.edit_message_text(t['intro'].format(name=user_name), reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
     elif data.startswith('pkg_'):
         lang = context.user_data.get('lang', 'en')
