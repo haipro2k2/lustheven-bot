@@ -20,11 +20,21 @@ WALLET_USDT_BSC = "0x3cd89f6fe2a4159cddf559a56b9d70ac2225d1ec"
 WALLET_BTC = "1Jucsph6cpJ7asnCeuM9qydqmd34xaNgwZ"
 
 # ==========================================
-# BỘ NGÔN NGỮ chuẩn 4 TIẾNG
+# BỘ NGÔN NGỮ CHUẨN 4 TIẾNG (ĐÃ CẬP NHẬT THEO ẢNH)
 # ==========================================
 TEXTS = {
     'en': {
-        'intro': "Hello, {name} 👋\n\nIn the premium channel, you'll find sizzling-hot content from the world's most stunning models. Get ready for an exclusive experience like no other!\n\n*By subscribing, you'll enjoy:*\n• Regular updates\n• Ad-free watching\n• Download to watch offline\n• High video quality\n• 10+ terabytes of content\n• Cancel anytime\n\nReady to unlock the forbidden allure?\n*Choose your plan 👇*",
+        'intro': (
+            "Our Premium channel features leaked videos of the most beautiful girls from OnlyFans / Artistic Nudity Photography "
+            "(College students, stage actresses, freelance fashion models)\n\n"
+            "Subscription package includes:\n\n"
+            "One-time purchase for lifetime access\n\n"
+            "Free downloads\n\n"
+            "• Over 3000 leaked models\n\n"
+            "• Over 100,000 videos uploaded to Telegram\n\n"
+            "• Best quality images and videos\n\n"
+            "• Regular updates"
+        ),
         'btn_annual': "Annually $45 (65% OFF)",
         'btn_monthly': "Monthly $11",
         'btn_overview': "View the channel overview",
@@ -43,7 +53,17 @@ TEXTS = {
         'invoice_crypto_text': "I sent payment ({network}), please check!",
     },
     'es': {
-        'intro': "Hola, {name} 👋\n\nEn el canal premium encontrarás contenido exclusivo de las modelos más impresionantes del mundo. ¡Prepárate para una experiencia única!\n\n*Al suscribirte, disfrutarás de:*\n• Actualizaciones regulares\n• Sin anuncios\n• Descarga para ver sin conexión\n• Alta calidad de video\n• Más de 10 terabytes de contenido\n• Cancela en cualquier momento\n\n¿Listo para acceder?\n*Elige tu plan 👇*",
+        'intro': (
+            "Nuestro canal Premium presenta videos filtrados de las chicas más bellas de OnlyFans / Fotografía Artística de Desnudez "
+            "(estudiantes universitarias, actrices de teatro, modelos independientes).\n\n"
+            "El paquete de suscripción incluye:\n\n"
+            "Compra única para acceso de por vida\n\n"
+            "Descargas gratuitas\n\n"
+            "• Más de 3000 modelos con contenido filtrado\n\n"
+            "• Más de 100 000 videos subidos a Telegram\n\n"
+            "• Imágenes y videos de la mejor calidad\n\n"
+            "• Actualizaciones regulares"
+        ),
         'btn_annual': "Anual $45 (65% DESCUENTO)",
         'btn_monthly': "Mensual $11",
         'btn_overview': "Ver resumen del canal",
@@ -62,7 +82,17 @@ TEXTS = {
         'invoice_crypto_text': "¡He enviado el pago ({network}), por favor verificar!",
     },
     'fr': {
-        'intro': "Bonjour, {name} 👋\n\nDans le canal premium, vous trouverez du contenu exclusif des plus beaux modèles du monde. Préparez-vous pour une expérience unique !\n\n*En vous abonnant, vous bénéficierez de :*\n• Mises à jour régulières\n• Sans publicité\n• Téléchargement pour regarder hors ligne\n• Haute qualité vidéo\n• Plus de 10 téraoctets de contenu\n• Annulation à tout moment\n\nPrêt à débloquer l'accès ?\n*Choisissez votre formule 👇*",
+        'intro': (
+            "Notre canal Premium propose des vidéos d'infiltration des plus belles filles d'OnlyFans / Photographie de Nu Artistique "
+            "(étudiantes universitaires, actrices de théâtre, mannequins indépendants).\n\n"
+            "Le forfait d'abonnement comprend :\n\n"
+            "Achat unique pour un accès à vie\n\n"
+            "Téléchargements gratuits\n\n"
+            "• Plus de 3 000 modèles exclusifs\n\n"
+            "• Plus de 100 000 vidéos téléchargées sur Telegram\n\n"
+            "• Images et vidéos de meilleure qualité\n\n"
+            "• Mises à jour régulières"
+        ),
         'btn_annual': "Annuel 45$ (-65%)",
         'btn_monthly': "Mensuel 11$",
         'btn_overview': "Aperçu du canal",
@@ -81,7 +111,17 @@ TEXTS = {
         'invoice_crypto_text': "J'ai envoyé le paiement ({network}), veuillez vérifier !",
     },
     'pt': {
-        'intro': "Olá, {name} 👋\n\nNo canal premium, você encontrará conteúdo exclusivo das modelos mais incríveis do mundo. Prepare-se para uma experiência única!\n\n*Ao assinar, você terá:*\n• Atualizações regulares\n• Sem anúncios\n• Download para assistir offline\n• Alta qualidade de vídeo\n• Mais de 10 terabytes de conteúdo\n• Cancele quando quiser\n\nPronto para acessar?\n*Escolha seu plano 👇*",
+        'intro': (
+            "Nosso canal Premium apresenta vídeos vazados das garotas mais lindas do OnlyFans / Fotografia Artística de Nu "
+            "(estudantes universitárias, atrizes de teatro, modelos independentes).\n\n"
+            "O pacote de assinatura inclui:\n\n"
+            "Compra única para acesso vitalício\n\n"
+            "Downloads gratuitos\n\n"
+            "• Mais de 3.000 modelos vazadas\n\n"
+            "• Mais de 100.000 vídeos enviados para o Telegram\n\n"
+            "• Imagens e vídeos de melhor qualidade\n\n"
+            "• Atualizações regulares"
+        ),
         'btn_annual': "Anual $45 (65% OFF)",
         'btn_monthly': "Mensal $11",
         'btn_overview': "Ver visão geral do canal",
@@ -113,7 +153,6 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
     query = update.callback_query
     await query.answer()
     data = query.data
-    user_name = query.from_user.first_name
 
     if data.startswith('lang_'):
         lang = data.replace('lang_', '')
@@ -124,7 +163,7 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
             [InlineKeyboardButton(t['btn_monthly'], callback_data='pkg_11')],
             [InlineKeyboardButton(t['btn_overview'], url=f"https://t.me/{ADMIN_USERNAME}")]
         ]
-        await query.edit_message_text(t['intro'].format(name=user_name), reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
+        await query.edit_message_text(t['intro'], reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
     elif data.startswith('pkg_'):
         lang = context.user_data.get('lang', 'en')
