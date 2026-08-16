@@ -25,7 +25,7 @@ WALLET_BTC = "1Jucsph6cpJ7asnCeuM9qydqmd34xaNgwZ"
 TEXTS = {
     'en': {
         'intro': (
-            "Our Premium channel features leaked videos of the most beautiful girls from OnlyFans / Artistic Nudity Photography "
+            "Hello, {name} 👋\n\n Our Premium channel features leaked videos of the most beautiful girls from OnlyFans / Artistic Nudity Photography "
             "(College students, stage actresses, freelance fashion models)\n\n"
             "Subscription package includes:\n\n"
             "One-time purchase for lifetime access\n\n"
