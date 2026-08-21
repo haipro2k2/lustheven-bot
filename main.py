@@ -31,7 +31,6 @@ TEXTS = {
             "• Regular updates\n\n"
             "🔥 **Special Offer: $20 for Lifetime**"
         ),
-        'select_pay': "Choose a payment method for **$20 Lifetime Access**:",
         'btn_card': "💳 Apple Pay/Card",
         'btn_crypto': "🏴‍☠️ Crypto",
         'btn_back': "Back to languages",
@@ -39,6 +38,7 @@ TEXTS = {
         'crypto_msg': "*Click Contact Manager*\n\nOur manager will provide you with the crypto deposit address (USDT / BTC) for $20 Lifetime access.",
         'btn_request_invoice': "Request Invoice ↗",
         'btn_contact_manager': "Contact Manager ↗",
+        'btn_back_pay': "Back",
         'invoice_card_text': "I want to pay $20 for Lifetime access by Card 💳",
         'invoice_crypto_text': "I want to pay $20 for Lifetime access by Crypto 🏴‍☠️",
     },
@@ -55,7 +55,6 @@ TEXTS = {
             "• Actualizaciones regulares\n\n"
             "🔥 **Oferta Especial: $20 de por vida**"
         ),
-        'select_pay': "Elige un método de pago para **Acceso de por vida ($20)**:",
         'btn_card': "💳 Apple Pay/Tarjeta",
         'btn_crypto': "🏴‍☠️ Criptomonedas",
         'btn_back': "Volver a idiomas",
@@ -63,6 +62,7 @@ TEXTS = {
         'crypto_msg': "*Haz clic en Contactar Administrador*\n\nNuestro administrador te proporcionará la dirección de depósito cripto (USDT / BTC) para el acceso de $20.",
         'btn_request_invoice': "Solicitar Factura ↗",
         'btn_contact_manager': "Contactar Administrador ↗",
+        'btn_back_pay': "Atrás",
         'invoice_card_text': "Quiero pagar $20 de por vida con tarjeta 💳",
         'invoice_crypto_text': "Quiero pagar $20 de por vida con Criptomonedas 🏴‍☠️",
     },
@@ -79,7 +79,6 @@ TEXTS = {
             "• Mises à jour régulières\n\n"
             "🔥 **Offre Spéciale : 20$ Accès à vie**"
         ),
-        'select_pay': "Choisissez un mode de paiement pour **Accès à vie (20$)** :",
         'btn_card': "💳 Apple Pay/Carte",
         'btn_crypto': "🏴‍☠️ Cryptomonnaie",
         'btn_back': "Retour aux langues",
@@ -87,6 +86,7 @@ TEXTS = {
         'crypto_msg': "*Cliquez sur Contacter le responsable*\n\nNotre responsable vous fournira l'adresse de dépôt crypto (USDT / BTC) pour l'accès à vie à 20$.",
         'btn_request_invoice': "Demander la facture ↗",
         'btn_contact_manager': "Contacter le responsable ↗",
+        'btn_back_pay': "Retour",
         'invoice_card_text': "Je souhaite payer 20$ pour l'accès à vie par carte 💳",
         'invoice_crypto_text': "Je souhaite payer 20$ pour l'accès à vie par Cryptomonnaie 🏴‍☠️",
     },
@@ -103,7 +103,6 @@ TEXTS = {
             "• Atualizações regulares\n\n"
             "🔥 **Oferta Especial: $20 Acesso Vitalício**"
         ),
-        'select_pay': "Escolha uma forma de pagamento para **Acesso Vitalício ($20)**:",
         'btn_card': "💳 Apple Pay/Cartão",
         'btn_crypto': "🏴‍☠️ Cripto",
         'btn_back': "Voltar para idiomas",
@@ -111,6 +110,7 @@ TEXTS = {
         'crypto_msg': "*Clique em Falar com Gerente*\n\nNosso gerente fornecerá o endereço para depósito em cripto (USDT / BTC) para o acesso vitalício de $20.",
         'btn_request_invoice': "Solicitar Fatura ↗",
         'btn_contact_manager': "Falar com Gerente ↗",
+        'btn_back_pay': "Voltar",
         'invoice_card_text': "Quero pagar $20 para acesso vitalício via cartão 💳",
         'invoice_crypto_text': "Quero pagar $20 para acesso vitalício via Cripto 🏴‍☠️",
     }
@@ -131,19 +131,19 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
 
     user_name = query.from_user.first_name if query.from_user and query.from_user.first_name else "there"
 
+    # Bước 1: Chọn ngôn ngữ -> Hiện bảng thông tin + nút chọn thanh toán (Gắn kèm mã ngôn ngữ)
     if data.startswith('lang_'):
         lang = data.replace('lang_', '')
-        context.user_data['lang'] = lang
-        t = TEXTS[lang]
+        t = TEXTS.get(lang, TEXTS['en'])
         
-        # Nhảy thẳng đến bước chọn thanh toán Card / Crypto
         keyboard = [
-            [InlineKeyboardButton(t['btn_card'], callback_data='pay_card')],
-            [InlineKeyboardButton(t['btn_crypto'], callback_data='pay_crypto')],
+            [InlineKeyboardButton(t['btn_card'], callback_data=f'pay_card_{lang}')],
+            [InlineKeyboardButton(t['btn_crypto'], callback_data=f'pay_crypto_{lang}')],
             [InlineKeyboardButton(t['btn_back'], callback_data='start_back')]
         ]
         await query.edit_message_text(t['intro'].format(name=user_name), reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
+    # Nút quay lại danh sách chọn ngôn ngữ
     elif data == 'start_back':
         keyboard = [
             [InlineKeyboardButton("English", callback_data='lang_en'), InlineKeyboardButton("Español", callback_data='lang_es')],
@@ -151,29 +151,31 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         await query.edit_message_text("Choose your language", reply_markup=InlineKeyboardMarkup(keyboard))
 
-    elif data == 'pay_card':
-        lang = context.user_data.get('lang', 'en')
-        t = TEXTS[lang]
+    # Bước 2a: Khách chọn thanh toán bằng CARD
+    elif data.startswith('pay_card_'):
+        lang = data.replace('pay_card_', '')
+        t = TEXTS.get(lang, TEXTS['en'])
         
         encoded_text = quote(t['invoice_card_text'])
         chat_url = f"https://t.me/{ADMIN_USERNAME}?text={encoded_text}"
         
         keyboard = [
             [InlineKeyboardButton(t['btn_request_invoice'], url=chat_url)],
-            [InlineKeyboardButton(t['btn_back'], callback_data=f"lang_{lang}")]
+            [InlineKeyboardButton(t['btn_back_pay'], callback_data=f"lang_{lang}")]
         ]
         await query.edit_message_text(t['card_msg'], reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
-    elif data == 'pay_crypto':
-        lang = context.user_data.get('lang', 'en')
-        t = TEXTS[lang]
+    # Bước 2b: Khách chọn thanh toán bằng CRYPTO
+    elif data.startswith('pay_crypto_'):
+        lang = data.replace('pay_crypto_', '')
+        t = TEXTS.get(lang, TEXTS['en'])
 
         encoded_text = quote(t['invoice_crypto_text'])
         chat_url = f"https://t.me/{ADMIN_USERNAME}?text={encoded_text}"
 
         keyboard = [
             [InlineKeyboardButton(t['btn_contact_manager'], url=chat_url)],
-            [InlineKeyboardButton(t['btn_back'], callback_data=f"lang_{lang}")]
+            [InlineKeyboardButton(t['btn_back_pay'], callback_data=f"lang_{lang}")]
         ]
         await query.edit_message_text(t['crypto_msg'], reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
