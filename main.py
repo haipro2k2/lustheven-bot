@@ -5,14 +5,11 @@ import requests
 
 app = Flask(__name__)
 
-# Lấy Token từ Environment Variables hoặc dùng chuỗi mặc định
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "8507992829:AAE1e_c6MFQlEnggmd6LUvI-Vo27oPeeRco")
+# LẤY TOKEN VÀ ADMIN TỪ ENVIRONMENT VARIABLES (BẢO MẬT)
+BOT_TOKEN = os.environ.get("8507992829:AAE87BpBU8CkC6P1bxOg-d65MMVg5A0h1oM")
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "LHeaven_Admin").strip().lstrip('@')
 TELEGRAM_API = f"https://api.telegram.org/bot{BOT_TOKEN}"
 
-# ==========================================
-# BỘ NGÔN NGỮ ĐÃ TỐI ƯU TEXT THUẦN (AN TOÀN tuyệt đối)
-# ==========================================
 TEXTS = {
     'en': {
         'intro': (
@@ -62,7 +59,7 @@ TEXTS = {
         'btn_contact_manager': "Contactar Administrador ↗",
         'btn_back_pay': "Atrás",
         'invoice_card_text': "Quiero pagar $20 de por vida con tarjeta 💳",
-        'invoice_crypto_text': "Quiero pagar $20 de por vida con Criptomonedas 🏴‍☠️️",
+        'invoice_crypto_text': "Quiero pagar $20 de por vida con Criptomonedas 🏴‍☠️",
     },
     'fr': {
         'intro': (
@@ -116,23 +113,30 @@ TEXTS = {
     }
 }
 
-def stop_loading_spinner(cb_id):
-    """Gửi yêu cầu tắt ngay vòng xoay loading trên nút bấm"""
+def telegram_post(method, payload):
+    """Hàm gửi request trực tiếp đến Telegram API và in Log chi tiết nếu có lỗi"""
+    if not BOT_TOKEN:
+        print("ERROR: BOT_TOKEN chưa được thiết lập trong Environment Variables!")
+        return None
     try:
-        requests.post(f"{TELEGRAM_API}/answerCallbackQuery", json={"callback_query_id": cb_id}, timeout=1.5)
-    except Exception:
-        pass
+        res = requests.post(f"{TELEGRAM_API}/{method}", json=payload, timeout=5)
+        res_data = res.json()
+        if not res_data.get("ok"):
+            print(f"Telegram Error [{method}]: {res_data}")
+        return res_data
+    except Exception as e:
+        print(f"HTTP Request Failed [{method}]: {e}")
+        return None
 
 @app.route("/", methods=["POST"])
 def webhook():
     data = request.get_json(force=True) or {}
 
-    # 1. Lệnh /start
+    # 1. Xử lý lệnh /start
     if "message" in data and "text" in data["message"]:
         chat_id = data["message"]["chat"]["id"]
         if data["message"]["text"] == "/start":
-            return jsonify({
-                "method": "sendMessage",
+            telegram_post("sendMessage", {
                 "chat_id": chat_id,
                 "text": "Choose your language",
                 "reply_markup": {
@@ -142,8 +146,9 @@ def webhook():
                     ]
                 }
             })
+            return jsonify({"ok": True})
 
-    # 2. Xử lý Nút Bấm Inline (Callback Query)
+    # 2. Xử lý nút bấm (Callback Query)
     elif "callback_query" in data:
         cb = data["callback_query"]
         cb_id = cb["id"]
@@ -152,15 +157,14 @@ def webhook():
         cb_data = cb.get("data", "")
         first_name = cb.get("from", {}).get("first_name", "there")
 
-        # Tắt vòng xoay trên Telegram ngay lập tức
-        stop_loading_spinner(cb_id)
+        # Tắt biểu tượng xoay trên nút ngay lập tức
+        telegram_post("answerCallbackQuery", {"callback_query_id": cb_id})
 
         # 2a. Chọn ngôn ngữ
         if cb_data.startswith("lang_"):
             lang = cb_data.replace("lang_", "")
             t = TEXTS.get(lang, TEXTS['en'])
-            return jsonify({
-                "method": "editMessageText",
+            telegram_post("editMessageText", {
                 "chat_id": chat_id,
                 "message_id": msg_id,
                 "text": t['intro'].format(name=first_name),
@@ -173,10 +177,9 @@ def webhook():
                 }
             })
 
-        # 2b. Quay lại chọn ngôn ngữ
+        # 2b. Quay lại menu ngôn ngữ
         elif cb_data == "start_back":
-            return jsonify({
-                "method": "editMessageText",
+            telegram_post("editMessageText", {
                 "chat_id": chat_id,
                 "message_id": msg_id,
                 "text": "Choose your language",
@@ -188,14 +191,13 @@ def webhook():
                 }
             })
 
-        # 2c. Chọn phương thức CARD
+        # 2c. Chọn thanh toán CARD
         elif cb_data.startswith("pay_card_"):
             lang = cb_data.replace("pay_card_", "")
             t = TEXTS.get(lang, TEXTS['en'])
             encoded_msg = urllib.parse.quote(t['invoice_card_text'])
             url = f"https://t.me/{ADMIN_USERNAME}?text={encoded_msg}"
-            return jsonify({
-                "method": "editMessageText",
+            telegram_post("editMessageText", {
                 "chat_id": chat_id,
                 "message_id": msg_id,
                 "text": t['card_msg'],
@@ -207,14 +209,13 @@ def webhook():
                 }
             })
 
-        # 2d. Chọn phương thức CRYPTO
+        # 2d. Chọn thanh toán CRYPTO
         elif cb_data.startswith("pay_crypto_"):
             lang = cb_data.replace("pay_crypto_", "")
             t = TEXTS.get(lang, TEXTS['en'])
             encoded_msg = urllib.parse.quote(t['invoice_crypto_text'])
             url = f"https://t.me/{ADMIN_USERNAME}?text={encoded_msg}"
-            return jsonify({
-                "method": "editMessageText",
+            telegram_post("editMessageText", {
                 "chat_id": chat_id,
                 "message_id": msg_id,
                 "text": t['crypto_msg'],
@@ -226,7 +227,9 @@ def webhook():
                 }
             })
 
-    return jsonify({"status": "ok"})
+        return jsonify({"ok": True})
+
+    return jsonify({"ok": True})
 
 @app.route("/", methods=["GET"])
 def index():
