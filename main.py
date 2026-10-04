@@ -3,20 +3,13 @@ import asyncio
 from urllib.parse import quote
 from flask import Flask, request
 from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler, ContextTypes
+from telegram.ext import ApplicationBuilder, CommandHandler, CallbackQueryHandler
 
 app = Flask(__name__)
 
-# ==========================================
-# CẤU HÌNH THÔNG TIN BOT
-# ==========================================
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "8507992829:AAE1e_c6MFQlEnggmd6LUvI-Vo27oPeeRco")
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "LHeaven_Admin").strip().lstrip('@')
-ADMIN_ID = os.environ.get("ADMIN_ID", "1765008581")
 
-# ==========================================
-# BỘ NGÔN NGỮ CHUẨN 4 TIẾNG (1 GÓI $20 LIFETIME)
-# ==========================================
 TEXTS = {
     'en': {
         'intro': (
@@ -56,7 +49,7 @@ TEXTS = {
             "🔥 **Oferta Especial: $20 de por vida**"
         ),
         'btn_card': "💳 Apple Pay/Tarjeta",
-        'btn_crypto': "🏴‍☠️ Criptomonedas",
+        'btn_crypto': "🏴‍☠️ Criptomonavda",
         'btn_back': "Volver a idiomas",
         'card_msg': "*Haz clic en Solicitar Factura*\n\nNuestro administrador te enviará las instrucciones de pago con tarjeta ($20).",
         'crypto_msg': "*Haz clic en Contactar Administrador*\n\nNuestro administrador te proporcionará la dirección de depósito cripto (USDT / BTC) para el acceso de $20.",
@@ -116,26 +109,23 @@ TEXTS = {
     }
 }
 
-# --- CÁC HÀM XỬ LÝ LOGIC BOT ---
-async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def start(update: Update, context):
     keyboard = [
         [InlineKeyboardButton("English", callback_data='lang_en'), InlineKeyboardButton("Español", callback_data='lang_es')],
         [InlineKeyboardButton("Français", callback_data='lang_fr'), InlineKeyboardButton("Português", callback_data='lang_pt')]
     ]
     await update.message.reply_text("Choose your language", reply_markup=InlineKeyboardMarkup(keyboard))
 
-async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
+async def handle_buttons(update: Update, context):
     query = update.callback_query
-    await query.answer()
+    await query.answer()  # Phản hồi ngay lập tức cho Telegram biết nút đã được nhận
+    
     data = query.data
-
     user_name = query.from_user.first_name if query.from_user and query.from_user.first_name else "there"
 
-    # Bước 1: Chọn ngôn ngữ -> Hiện bảng thông tin + nút chọn thanh toán (Gắn kèm mã ngôn ngữ)
     if data.startswith('lang_'):
         lang = data.replace('lang_', '')
         t = TEXTS.get(lang, TEXTS['en'])
-        
         keyboard = [
             [InlineKeyboardButton(t['btn_card'], callback_data=f'pay_card_{lang}')],
             [InlineKeyboardButton(t['btn_crypto'], callback_data=f'pay_crypto_{lang}')],
@@ -143,7 +133,6 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         await query.edit_message_text(t['intro'].format(name=user_name), reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
-    # Nút quay lại danh sách chọn ngôn ngữ
     elif data == 'start_back':
         keyboard = [
             [InlineKeyboardButton("English", callback_data='lang_en'), InlineKeyboardButton("Español", callback_data='lang_es')],
@@ -151,59 +140,49 @@ async def handle_buttons(update: Update, context: ContextTypes.DEFAULT_TYPE):
         ]
         await query.edit_message_text("Choose your language", reply_markup=InlineKeyboardMarkup(keyboard))
 
-    # Bước 2a: Khách chọn thanh toán bằng CARD
     elif data.startswith('pay_card_'):
         lang = data.replace('pay_card_', '')
         t = TEXTS.get(lang, TEXTS['en'])
-        
         encoded_text = quote(t['invoice_card_text'])
         chat_url = f"https://t.me/{ADMIN_USERNAME}?text={encoded_text}"
-        
         keyboard = [
             [InlineKeyboardButton(t['btn_request_invoice'], url=chat_url)],
             [InlineKeyboardButton(t['btn_back_pay'], callback_data=f"lang_{lang}")]
         ]
         await query.edit_message_text(t['card_msg'], reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
-    # Bước 2b: Khách chọn thanh toán bằng CRYPTO
     elif data.startswith('pay_crypto_'):
         lang = data.replace('pay_crypto_', '')
         t = TEXTS.get(lang, TEXTS['en'])
-
         encoded_text = quote(t['invoice_crypto_text'])
         chat_url = f"https://t.me/{ADMIN_USERNAME}?text={encoded_text}"
-
         keyboard = [
             [InlineKeyboardButton(t['btn_contact_manager'], url=chat_url)],
             [InlineKeyboardButton(t['btn_back_pay'], callback_data=f"lang_{lang}")]
         ]
         await query.edit_message_text(t['crypto_msg'], reply_markup=InlineKeyboardMarkup(keyboard), parse_mode='Markdown')
 
-# ==========================================
-# KHỞI TẠO BOT DẠNG HÀM VERCEL WEBHOOK
-# ==========================================
-async def process_update_async(update_data):
+async def process_telegram_update(update_data):
     ptb_app = ApplicationBuilder().token(BOT_TOKEN).build()
     ptb_app.add_handler(CommandHandler("start", start))
     ptb_app.add_handler(CallbackQueryHandler(handle_buttons))
     
-    async with ptb_app:
-        await ptb_app.initialize()
-        update = Update.de_json(update_data, ptb_app.bot)
-        await ptb_app.process_update(update)
+    await ptb_app.initialize()
+    update = Update.de_json(update_data, ptb_app.bot)
+    await ptb_app.process_update(update)
 
 @app.route("/", methods=["POST"])
 def webhook():
     if request.method == "POST":
         try:
             update_data = request.get_json(force=True)
-            asyncio.run(process_update_async(update_data))
+            asyncio.run(process_telegram_update(update_data))
             return "OK", 200
         except Exception as e:
             print(f"Error handling update: {e}")
-            return "Error", 500
+            return "OK", 200
     return "Bad Request", 400
 
 @app.route("/", methods=["GET"])
 def index():
-    return "Bot Telegram đang chạy mượt mà trên Vercel!", 200
+    return "Bot Telegram Active!", 200
