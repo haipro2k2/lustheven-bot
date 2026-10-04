@@ -5,11 +5,15 @@ import requests
 
 app = Flask(__name__)
 
-# LẤY TOKEN VÀ ADMIN TỪ ENVIRONMENT VARIABLES (BẢO MẬT)
-BOT_TOKEN = os.environ.get("8507992829:AAE87BpBU8CkC6P1bxOg-d65MMVg5A0h1oM")
+# Lấy token mới từ Environment Variables (hoặc fallback token mới nhất bạn vừa tạo)
+TOKEN_NEW = "8507992829:AAE87BpBU8CkC6P1bxOg-d65MMVg5A0h1oM"
+BOT_TOKEN = os.environ.get("BOT_TOKEN", TOKEN_NEW)
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "LHeaven_Admin").strip().lstrip('@')
 TELEGRAM_API = f"https://api.telegram.org/bot{BOT_TOKEN}"
 
+# ==========================================
+# BỘ NGÔN NGỮ ĐÃ TỐI ƯU TEXT THUẦN (AN TOÀN TUYỆT ĐỐI)
+# ==========================================
 TEXTS = {
     'en': {
         'intro': (
@@ -26,7 +30,7 @@ TEXTS = {
             "🔥 Special Offer: $20 for Lifetime"
         ),
         'btn_card': "💳 Apple Pay/Card",
-        'btn_crypto': "🏴‍☠️ Crypto",
+        'btn_crypto': "🏴‍‍☠️ Crypto",
         'btn_back': "Back to languages",
         'card_msg': "Click Request Invoice\n\nOur manager will send you payment instructions for Card/Apple Pay ($20).",
         'crypto_msg': "Click Contact Manager\n\nOur manager will provide you with the crypto deposit address (USDT / BTC) for $20 Lifetime access.",
@@ -114,10 +118,7 @@ TEXTS = {
 }
 
 def telegram_post(method, payload):
-    """Hàm gửi request trực tiếp đến Telegram API và in Log chi tiết nếu có lỗi"""
-    if not BOT_TOKEN:
-        print("ERROR: BOT_TOKEN chưa được thiết lập trong Environment Variables!")
-        return None
+    """Gửi API trực tiếp đến Telegram và log lỗi nếu có"""
     try:
         res = requests.post(f"{TELEGRAM_API}/{method}", json=payload, timeout=5)
         res_data = res.json()
@@ -125,7 +126,7 @@ def telegram_post(method, payload):
             print(f"Telegram Error [{method}]: {res_data}")
         return res_data
     except Exception as e:
-        print(f"HTTP Request Failed [{method}]: {e}")
+        print(f"HTTP Failed [{method}]: {e}")
         return None
 
 @app.route("/", methods=["POST"])
@@ -148,7 +149,7 @@ def webhook():
             })
             return jsonify({"ok": True})
 
-    # 2. Xử lý nút bấm (Callback Query)
+    # 2. Xử lý Nút Bấm Callback
     elif "callback_query" in data:
         cb = data["callback_query"]
         cb_id = cb["id"]
@@ -157,10 +158,10 @@ def webhook():
         cb_data = cb.get("data", "")
         first_name = cb.get("from", {}).get("first_name", "there")
 
-        # Tắt biểu tượng xoay trên nút ngay lập tức
+        # Tắt vòng xoay loading ngay lập tức
         telegram_post("answerCallbackQuery", {"callback_query_id": cb_id})
 
-        # 2a. Chọn ngôn ngữ
+        # 2a. Chọn Ngôn Ngữ
         if cb_data.startswith("lang_"):
             lang = cb_data.replace("lang_", "")
             t = TEXTS.get(lang, TEXTS['en'])
@@ -177,7 +178,7 @@ def webhook():
                 }
             })
 
-        # 2b. Quay lại menu ngôn ngữ
+        # 2b. Quay lại Ngôn Ngữ
         elif cb_data == "start_back":
             telegram_post("editMessageText", {
                 "chat_id": chat_id,
@@ -191,7 +192,7 @@ def webhook():
                 }
             })
 
-        # 2c. Chọn thanh toán CARD
+        # 2c. Chọn Thanh Toán CARD
         elif cb_data.startswith("pay_card_"):
             lang = cb_data.replace("pay_card_", "")
             t = TEXTS.get(lang, TEXTS['en'])
@@ -209,7 +210,7 @@ def webhook():
                 }
             })
 
-        # 2d. Chọn thanh toán CRYPTO
+        # 2d. Chọn Thanh Toán CRYPTO
         elif cb_data.startswith("pay_crypto_"):
             lang = cb_data.replace("pay_crypto_", "")
             t = TEXTS.get(lang, TEXTS['en'])
@@ -233,4 +234,4 @@ def webhook():
 
 @app.route("/", methods=["GET"])
 def index():
-    return "Bot Active!", 200
+    return "Bot is running!", 200
