@@ -5,6 +5,7 @@ import requests
 
 app = Flask(__name__)
 
+# Lấy token từ Environment Variables hoặc dùng Token của bạn
 BOT_TOKEN = os.environ.get("BOT_TOKEN", "8507992829:AAE87BpBU8CkC6P1bxOg-d65MMVg5A0h1oM")
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "LHeaven_Admin").strip().lstrip('@')
 TELEGRAM_API = f"https://api.telegram.org/bot{BOT_TOKEN}"
@@ -131,9 +132,10 @@ def telegram_post(method, payload):
 def webhook():
     data = request.get_json(force=True) or {}
 
+    # 1. Xử lý câu lệnh /start từ tin nhắn
     if "message" in data and "text" in data["message"]:
         chat_id = data["message"]["chat"]["id"]
-        if data["message"]["text"] == "/start":
+        if data["message"]["text"].startswith("/start"):
             telegram_post("sendMessage", {
                 "chat_id": chat_id,
                 "text": "Choose your language",
@@ -146,6 +148,7 @@ def webhook():
             })
             return jsonify({"ok": True})
 
+    # 2. Xử lý sự kiện bấm nút Inline
     elif "callback_query" in data:
         cb = data["callback_query"]
         cb_id = cb["id"]
@@ -156,6 +159,7 @@ def webhook():
 
         telegram_post("answerCallbackQuery", {"callback_query_id": cb_id})
 
+        # Chọn Ngôn Ngữ -> Hiện menu chứa nút Xem Demo
         if cb_data.startswith("lang_"):
             lang = cb_data.replace("lang_", "")
             t = TEXTS.get(lang, TEXTS['en'])
@@ -176,6 +180,7 @@ def webhook():
                 }
             })
 
+        # Quay lại phần chọn ngôn ngữ
         elif cb_data == "start_back":
             telegram_post("editMessageText", {
                 "chat_id": chat_id,
@@ -189,6 +194,7 @@ def webhook():
                 }
             })
 
+        # Thanh toán qua Card
         elif cb_data.startswith("pay_card_"):
             lang = cb_data.replace("pay_card_", "")
             t = TEXTS.get(lang, TEXTS['en'])
@@ -206,6 +212,7 @@ def webhook():
                 }
             })
 
+        # Thanh toán qua Crypto
         elif cb_data.startswith("pay_crypto_"):
             lang = cb_data.replace("pay_crypto_", "")
             t = TEXTS.get(lang, TEXTS['en'])
