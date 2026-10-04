@@ -1,10 +1,13 @@
 import os
 import urllib.parse
 from flask import Flask, request, jsonify
+import requests
 
 app = Flask(__name__)
 
+BOT_TOKEN = os.environ.get("BOT_TOKEN", "8507992829:AAE1e_c6MFQlEnggmd6LUvI-Vo27oPeeRco")
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "LHeaven_Admin").strip().lstrip('@')
+TELEGRAM_API = f"https://api.telegram.org/bot{BOT_TOKEN}"
 
 TEXTS = {
     'en': {
@@ -93,7 +96,7 @@ TEXTS = {
             "🔥 **Oferta Especial: $20 Acesso Vitalício**"
         ),
         'btn_card': "💳 Apple Pay/Cartão",
-        'btn_crypto': "🏴‍‍☠️ Cripto",
+        'btn_crypto': "🏴‍☠️ Cripto",
         'btn_back': "Voltar para idiomas",
         'card_msg': "*Clique em Solicitar Fatura*\n\nNosso gerente enviará as instruções para pagamento via cartão ($20).",
         'crypto_msg': "*Clique em Falar com Gerente*\n\nNosso gerente fornecerá o endereço para depósito em cripto (USDT / BTC) para o acesso vitalício de $20.",
@@ -104,6 +107,13 @@ TEXTS = {
         'invoice_crypto_text': "Quero pagar $20 para acesso vitalício via Cripto 🏴‍☠️",
     }
 }
+
+def stop_button_loading(cb_id):
+    """Gửi lệnh tắt ngay lập tức vòng xoay loading của nút bấm trên Telegram"""
+    try:
+        requests.post(f"{TELEGRAM_API}/answerCallbackQuery", json={"callback_query_id": cb_id}, timeout=2)
+    except Exception:
+        pass
 
 @app.route("/", methods=["POST"])
 def webhook():
@@ -128,10 +138,14 @@ def webhook():
     # 2. Người dùng bấm nút (Callback Query)
     elif "callback_query" in data:
         cb = data["callback_query"]
+        cb_id = cb["id"]
         chat_id = cb["message"]["chat"]["id"]
         msg_id = cb["message"]["message_id"]
         cb_data = cb.get("data", "")
         first_name = cb.get("from", {}).get("first_name", "there")
+
+        # Tắt vòng xoay ngay lập tức
+        stop_button_loading(cb_id)
 
         # 2a. Chọn ngôn ngữ
         if cb_data.startswith("lang_"):
@@ -142,7 +156,6 @@ def webhook():
                 "chat_id": chat_id,
                 "message_id": msg_id,
                 "text": t['intro'].format(name=first_name),
-                "parse_mode": "Markdown",
                 "reply_markup": {
                     "inline_keyboard": [
                         [{"text": t['btn_card'], "callback_data": f"pay_card_{lang}"}],
@@ -178,7 +191,6 @@ def webhook():
                 "chat_id": chat_id,
                 "message_id": msg_id,
                 "text": t['card_msg'],
-                "parse_mode": "Markdown",
                 "reply_markup": {
                     "inline_keyboard": [
                         [{"text": t['btn_request_invoice'], "url": url}],
@@ -198,7 +210,6 @@ def webhook():
                 "chat_id": chat_id,
                 "message_id": msg_id,
                 "text": t['crypto_msg'],
-                "parse_mode": "Markdown",
                 "reply_markup": {
                     "inline_keyboard": [
                         [{"text": t['btn_contact_manager'], "url": url}],
