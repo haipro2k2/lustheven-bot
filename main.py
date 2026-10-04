@@ -1,20 +1,11 @@
 import os
 import urllib.parse
-from flask import Flask, request
-import requests
+from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-# ==========================================
-# CẤU HÌNH THÔNG TIN BOT
-# ==========================================
-BOT_TOKEN = os.environ.get("BOT_TOKEN", "8507992829:AAE1e_c6MFQlEnggmd6LUvI-Vo27oPeeRco")
 ADMIN_USERNAME = os.environ.get("ADMIN_USERNAME", "LHeaven_Admin").strip().lstrip('@')
-TELEGRAM_API = f"https://api.telegram.org/bot{BOT_TOKEN}"
 
-# ==========================================
-# BỘ NGÔN NGỮ CHUẨN 4 TIẾNG (FULL TEXT)
-# ==========================================
 TEXTS = {
     'en': {
         'intro': (
@@ -30,7 +21,7 @@ TEXTS = {
             "🔥 **Special Offer: $20 for Lifetime**"
         ),
         'btn_card': "💳 Apple Pay/Card",
-        'btn_crypto': "🏴‍‍☠️ Crypto",
+        'btn_crypto': "🏴‍☠️ Crypto",
         'btn_back': "Back to languages",
         'card_msg': "*Click Request Invoice*\n\nOur manager will send you payment instructions for Card/Apple Pay ($20).",
         'crypto_msg': "*Click Contact Manager*\n\nOur manager will provide you with the crypto deposit address (USDT / BTC) for $20 Lifetime access.",
@@ -102,7 +93,7 @@ TEXTS = {
             "🔥 **Oferta Especial: $20 Acesso Vitalício**"
         ),
         'btn_card': "💳 Apple Pay/Cartão",
-        'btn_crypto': "🏴‍☠️ Cripto",
+        'btn_crypto': "🏴‍‍☠️ Cripto",
         'btn_back': "Voltar para idiomas",
         'card_msg': "*Clique em Solicitar Fatura*\n\nNosso gerente enviará as instruções para pagamento via cartão ($20).",
         'crypto_msg': "*Clique em Falar com Gerente*\n\nNosso gerente fornecerá o endereço para depósito em cripto (USDT / BTC) para o acesso vitalício de $20.",
@@ -114,116 +105,109 @@ TEXTS = {
     }
 }
 
-# ==========================================
-# CÁC HÀM GỬI/SỬA TIN NHẮN TỪ TELEGRAM API
-# ==========================================
-def send_message(chat_id, text, reply_markup=None):
-    payload = {"chat_id": chat_id, "text": text, "parse_mode": "Markdown"}
-    if reply_markup:
-        payload["reply_markup"] = reply_markup
-    res = requests.post(f"{TELEGRAM_API}/sendMessage", json=payload)
-    # Thử gửi lại dạng thường nếu Markdown lỗi
-    if not res.ok:
-        payload.pop("parse_mode", None)
-        requests.post(f"{TELEGRAM_API}/sendMessage", json=payload)
-
-def edit_message(chat_id, message_id, text, reply_markup=None):
-    payload = {"chat_id": chat_id, "message_id": message_id, "text": text, "parse_mode": "Markdown"}
-    if reply_markup:
-        payload["reply_markup"] = reply_markup
-    res = requests.post(f"{TELEGRAM_API}/editMessageText", json=payload)
-    # Thử gửi lại dạng thường nếu Markdown lỗi
-    if not res.ok:
-        payload.pop("parse_mode", None)
-        requests.post(f"{TELEGRAM_API}/editMessageText", json=payload)
-
-def answer_callback(callback_query_id):
-    requests.post(f"{TELEGRAM_API}/answerCallbackQuery", json={"callback_query_id": callback_query_id})
-
-# ==========================================
-# ROUTE XỬ LÝ WEBHOOK TỪ TELEGRAM
-# ==========================================
 @app.route("/", methods=["POST"])
 def webhook():
-    try:
-        data = request.get_json(force=True)
-        if not data:
-            return "OK", 200
+    data = request.get_json(force=True) or {}
 
-        # 1. Xử lý khi người dùng gõ /start
-        if "message" in data and "text" in data["message"]:
-            chat_id = data["message"]["chat"]["id"]
-            if data["message"]["text"] == "/start":
-                keyboard = {
+    # 1. Người dùng bấm /start
+    if "message" in data and "text" in data["message"]:
+        chat_id = data["message"]["chat"]["id"]
+        if data["message"]["text"] == "/start":
+            return jsonify({
+                "method": "sendMessage",
+                "chat_id": chat_id,
+                "text": "Choose your language",
+                "reply_markup": {
                     "inline_keyboard": [
                         [{"text": "English", "callback_data": "lang_en"}, {"text": "Español", "callback_data": "lang_es"}],
                         [{"text": "Français", "callback_data": "lang_fr"}, {"text": "Português", "callback_data": "lang_pt"}]
                     ]
                 }
-                send_message(chat_id, "Choose your language", keyboard)
+            })
 
-        # 2. Xử lý khi người dùng bấm nút Inline
-        elif "callback_query" in data:
-            cb = data["callback_query"]
-            cb_id = cb["id"]
-            chat_id = cb["message"]["chat"]["id"]
-            msg_id = cb["message"]["message_id"]
-            cb_data = cb.get("data", "")
-            first_name = cb.get("from", {}).get("first_name", "there")
+    # 2. Người dùng bấm nút (Callback Query)
+    elif "callback_query" in data:
+        cb = data["callback_query"]
+        chat_id = cb["message"]["chat"]["id"]
+        msg_id = cb["message"]["message_id"]
+        cb_data = cb.get("data", "")
+        first_name = cb.get("from", {}).get("first_name", "there")
 
-            answer_callback(cb_id)
-
-            if cb_data.startswith("lang_"):
-                lang = cb_data.replace("lang_", "")
-                t = TEXTS.get(lang, TEXTS['en'])
-                keyboard = {
+        # 2a. Chọn ngôn ngữ
+        if cb_data.startswith("lang_"):
+            lang = cb_data.replace("lang_", "")
+            t = TEXTS.get(lang, TEXTS['en'])
+            return jsonify({
+                "method": "editMessageText",
+                "chat_id": chat_id,
+                "message_id": msg_id,
+                "text": t['intro'].format(name=first_name),
+                "parse_mode": "Markdown",
+                "reply_markup": {
                     "inline_keyboard": [
                         [{"text": t['btn_card'], "callback_data": f"pay_card_{lang}"}],
                         [{"text": t['btn_crypto'], "callback_data": f"pay_crypto_{lang}"}],
                         [{"text": t['btn_back'], "callback_data": "start_back"}]
                     ]
                 }
-                edit_message(chat_id, msg_id, t['intro'].format(name=first_name), keyboard)
+            })
 
-            elif cb_data == "start_back":
-                keyboard = {
+        # 2b. Quay lại chọn ngôn ngữ
+        elif cb_data == "start_back":
+            return jsonify({
+                "method": "editMessageText",
+                "chat_id": chat_id,
+                "message_id": msg_id,
+                "text": "Choose your language",
+                "reply_markup": {
                     "inline_keyboard": [
                         [{"text": "English", "callback_data": "lang_en"}, {"text": "Español", "callback_data": "lang_es"}],
                         [{"text": "Français", "callback_data": "lang_fr"}, {"text": "Português", "callback_data": "lang_pt"}]
                     ]
                 }
-                edit_message(chat_id, msg_id, "Choose your language", keyboard)
+            })
 
-            elif cb_data.startswith("pay_card_"):
-                lang = cb_data.replace("pay_card_", "")
-                t = TEXTS.get(lang, TEXTS['en'])
-                encoded_msg = urllib.parse.quote(t['invoice_card_text'])
-                url = f"https://t.me/{ADMIN_USERNAME}?text={encoded_msg}"
-                keyboard = {
+        # 2c. Chọn CARD
+        elif cb_data.startswith("pay_card_"):
+            lang = cb_data.replace("pay_card_", "")
+            t = TEXTS.get(lang, TEXTS['en'])
+            encoded_msg = urllib.parse.quote(t['invoice_card_text'])
+            url = f"https://t.me/{ADMIN_USERNAME}?text={encoded_msg}"
+            return jsonify({
+                "method": "editMessageText",
+                "chat_id": chat_id,
+                "message_id": msg_id,
+                "text": t['card_msg'],
+                "parse_mode": "Markdown",
+                "reply_markup": {
                     "inline_keyboard": [
                         [{"text": t['btn_request_invoice'], "url": url}],
                         [{"text": t['btn_back_pay'], "callback_data": f"lang_{lang}"}]
                     ]
                 }
-                edit_message(chat_id, msg_id, t['card_msg'], keyboard)
+            })
 
-            elif cb_data.startswith("pay_crypto_"):
-                lang = cb_data.replace("pay_crypto_", "")
-                t = TEXTS.get(lang, TEXTS['en'])
-                encoded_msg = urllib.parse.quote(t['invoice_crypto_text'])
-                url = f"https://t.me/{ADMIN_USERNAME}?text={encoded_msg}"
-                keyboard = {
+        # 2d. Chọn CRYPTO
+        elif cb_data.startswith("pay_crypto_"):
+            lang = cb_data.replace("pay_crypto_", "")
+            t = TEXTS.get(lang, TEXTS['en'])
+            encoded_msg = urllib.parse.quote(t['invoice_crypto_text'])
+            url = f"https://t.me/{ADMIN_USERNAME}?text={encoded_msg}"
+            return jsonify({
+                "method": "editMessageText",
+                "chat_id": chat_id,
+                "message_id": msg_id,
+                "text": t['crypto_msg'],
+                "parse_mode": "Markdown",
+                "reply_markup": {
                     "inline_keyboard": [
                         [{"text": t['btn_contact_manager'], "url": url}],
                         [{"text": t['btn_back_pay'], "callback_data": f"lang_{lang}"}]
                     ]
                 }
-                edit_message(chat_id, msg_id, t['crypto_msg'], keyboard)
+            })
 
-    except Exception as e:
-        print(f"Webhook Error: {e}")
-
-    return "OK", 200
+    return jsonify({"status": "ok"})
 
 @app.route("/", methods=["GET"])
 def index():
