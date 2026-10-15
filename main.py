@@ -94,3 +94,90 @@ def handle_update(update):
     cb_id = callback.get('id')
     if cb_id:
         tg('answerCallbackQuery', {'callback_query_id': cb_id})
+    msg = callback.get('message', {})
+    if not msg.get('chat') or not msg.get('message_id'):
+        return
+    data = callback.get('data', '')
+    chat_id, message_id = msg['chat']['id'], msg['message_id']
+    if data.startswith('demo_') and data[5:] in LANGUAGES:
+        lang = data[5:]
+        if not DEMO_VIDEO:
+            tg('sendMessage', {'chat_id': chat_id,
+                               'text': '🎬 Demo video is being updated. Please check back soon.'})
+            return
+        video_result = tg('sendVideo', {
+            'chat_id': chat_id,
+            'video': DEMO_VIDEO,
+            'caption': '🎬 Premium channel preview',
+            'supports_streaming': True,
+            'reply_markup': {'inline_keyboard': [
+                [{'text': LANGUAGES[lang]['card'], 'callback_data': 'card_' + lang}],
+                [{'text': LANGUAGES[lang]['crypto'], 'callback_data': 'crypto_' + lang}],
+                [{'text': LANGUAGES[lang]['back'], 'callback_data': 'lang_' + lang}]
+            ]}
+        })
+        if not video_result.get('ok'):
+            tg('sendMessage', {'chat_id': chat_id,
+                               'text': 'Video is temporarily unavailable. Please try again later.'})
+        return
+    if data == 'back_languages':
+        text, menu = '🌐 Choose your language / Selecciona tu idioma', language_menu()
+    elif data.startswith('lang_') and data[5:] in LANGUAGES:
+        lang = data[5:]
+        name = callback.get('from', {}).get('first_name', 'friend').replace('{', '').replace('}', '')
+        text, menu = LANGUAGES[lang]['title'].format(name=name), info_menu(lang)
+    elif data.startswith(('card_', 'crypto_')):
+        method, _, lang = data.partition('_')
+        if lang not in LANGUAGES:
+            return
+        text = LANGUAGES[lang]['card_info' if method == 'card' else 'crypto_info']
+        menu = payment_menu(lang, method)
+    else:
+        return
+    # Video messages have a caption, not editable text.
+    # Use editMessageCaption for video callbacks so payment/back buttons work.
+    if msg.get('video') or msg.get('animation') or msg.get('photo'):
+        result = tg('editMessageCaption', {
+            'chat_id': chat_id,
+            'message_id': message_id,
+            'caption': text,
+            'reply_markup': menu
+        })
+    else:
+        result = tg('editMessageText', {
+            'chat_id': chat_id,
+            'message_id': message_id,
+            'text': text,
+            'reply_markup': menu
+        })
+
+    # Fallback for messages Telegram does not permit editing.
+    if not result.get('ok'):
+        tg('sendMessage', {
+            'chat_id': chat_id,
+            'text': text,
+            'reply_markup': menu
+        })
+
+
+@app.get('/')
+def health():
+    return jsonify({'status': 'running'}), 200
+
+
+@app.post('/')
+def webhook():
+    if not BOT_TOKEN or not WEBHOOK_SECRET:
+        logger.error('BOT_TOKEN or WEBHOOK_SECRET missing')
+        return jsonify({'error': 'server not configured'}), 503
+    if request.headers.get('X-Telegram-Bot-Api-Secret-Token') != WEBHOOK_SECRET:
+        return jsonify({'error': 'unauthorized'}), 403
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify({'error': 'invalid JSON'}), 400
+    try:
+        handle_update(data)
+    except Exception:
+        logger.exception('Unhandled update error')
+        return jsonify({'error': 'internal error'}), 500
+    return jsonify({'ok': True}), 200
