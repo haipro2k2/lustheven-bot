@@ -72,12 +72,35 @@ def payment_menu(lang, method):
     return {'inline_keyboard': rows}
 
 
+def replace_screen(chat_id, old_message_id, method, payload):
+    """Send replacement first; delete previous screen only on success."""
+    result = tg(method, dict(payload, chat_id=chat_id))
+    if result.get('ok'):
+        removed = tg('deleteMessage', {
+            'chat_id': chat_id,
+            'message_id': old_message_id
+        })
+        if not removed.get('ok'):
+            logger.warning('Could not remove old screen message')
+    return result
+
+
+def demo_keyboard(lang):
+    t = LANGUAGES[lang]
+    return {'inline_keyboard': [
+        [{'text': t['card'], 'callback_data': 'vcard_' + lang}],
+        [{'text': t['crypto'], 'callback_data': 'vcrypto_' + lang}],
+        [{'text': t['back'], 'callback_data': 'lang_' + lang}]
+    ]}
+
+
 def handle_update(update):
-    message = update.get('message', {})
-    # Only the configured administrator can ask for a video file_id.
-    sender = message.get('from', {})
-    is_admin = (bool(ADMIN_USERNAME) and
-                sender.get('username', '').casefold() == ADMIN_USERNAME.casefold())
+    message = update.get('message') or {}
+    sender = message.get('from') or {}
+    is_admin = (
+        bool(ADMIN_USERNAME)
+        and sender.get('username', '').casefold() == ADMIN_USERNAME.casefold()
+    )
     video = message.get('video')
     if video and message.get('chat', {}).get('type') == 'private' and is_admin:
         tg('sendMessage', {
@@ -85,79 +108,77 @@ def handle_update(update):
             'text': 'VIDEO FILE ID:\n' + video['file_id']
         })
         return
+
     if message.get('text', '').split(' ', 1)[0].split('@')[0] == '/start':
-        tg('sendMessage', {'chat_id': message['chat']['id'], 'text': '🌐 Choose your language / Selecciona tu idioma', 'reply_markup': language_menu()})
+        tg('sendMessage', {
+            'chat_id': message['chat']['id'],
+            'text': '🌐 Choose your language / Selecciona tu idioma',
+            'reply_markup': language_menu()
+        })
         return
+
     callback = update.get('callback_query')
     if not callback:
         return
     cb_id = callback.get('id')
     if cb_id:
         tg('answerCallbackQuery', {'callback_query_id': cb_id})
-    msg = callback.get('message', {})
+
+    msg = callback.get('message') or {}
     if not msg.get('chat') or not msg.get('message_id'):
         return
+    chat_id = msg['chat']['id']
+    message_id = msg['message_id']
     data = callback.get('data', '')
-    chat_id, message_id = msg['chat']['id'], msg['message_id']
+
     if data.startswith('demo_') and data[5:] in LANGUAGES:
         lang = data[5:]
         if not DEMO_VIDEO:
-            tg('sendMessage', {'chat_id': chat_id,
-                               'text': '🎬 Demo video is being updated. Please check back soon.'})
+            tg('answerCallbackQuery', {
+                'callback_query_id': cb_id,
+                'text': 'Demo video is not configured.',
+                'show_alert': True
+            })
             return
-        video_result = tg('sendVideo', {
-            'chat_id': chat_id,
+        result = replace_screen(chat_id, message_id, 'sendVideo', {
             'video': DEMO_VIDEO,
             'caption': '🎬 Premium channel preview',
             'supports_streaming': True,
-            'reply_markup': {'inline_keyboard': [
-                [{'text': LANGUAGES[lang]['card'], 'callback_data': 'card_' + lang}],
-                [{'text': LANGUAGES[lang]['crypto'], 'callback_data': 'crypto_' + lang}],
-                [{'text': LANGUAGES[lang]['back'], 'callback_data': 'lang_' + lang}]
-            ]}
+            'reply_markup': demo_keyboard(lang)
         })
-        if not video_result.get('ok'):
-            tg('sendMessage', {'chat_id': chat_id,
-                               'text': 'Video is temporarily unavailable. Please try again later.'})
+        if not result.get('ok'):
+            logger.error('Failed to send demo video')
         return
+
     if data == 'back_languages':
-        text, menu = '🌐 Choose your language / Selecciona tu idioma', language_menu()
+        text = '🌐 Choose your language / Selecciona tu idioma'
+        menu = language_menu()
     elif data.startswith('lang_') and data[5:] in LANGUAGES:
         lang = data[5:]
-        name = callback.get('from', {}).get('first_name', 'friend').replace('{', '').replace('}', '')
-        text, menu = LANGUAGES[lang]['title'].format(name=name), info_menu(lang)
-    elif data.startswith(('card_', 'crypto_')):
-        method, _, lang = data.partition('_')
+        name = callback.get('from', {}).get('first_name', 'friend')
+        name = name.replace('{', '').replace('}', '')
+        text = LANGUAGES[lang]['title'].format(name=name)
+        menu = info_menu(lang)
+    elif data.startswith(('vcard_', 'vcrypto_', 'card_', 'crypto_')):
+        from_demo = data.startswith('v')
+        clean = data[1:] if from_demo else data
+        method, _, lang = clean.partition('_')
         if lang not in LANGUAGES:
             return
-        text = LANGUAGES[lang]['card_info' if method == 'card' else 'crypto_info']
+        t = LANGUAGES[lang]
+        text = t['card_info' if method == 'card' else 'crypto_info']
         menu = payment_menu(lang, method)
+        if from_demo:
+            # Payment entered from video: Back returns to video.
+            menu['inline_keyboard'][-1][0]['callback_data'] = 'demo_' + lang
     else:
         return
-    # Video messages have a caption, not editable text.
-    # Use editMessageCaption for video callbacks so payment/back buttons work.
-    if msg.get('video') or msg.get('animation') or msg.get('photo'):
-        result = tg('editMessageCaption', {
-            'chat_id': chat_id,
-            'message_id': message_id,
-            'caption': text,
-            'reply_markup': menu
-        })
-    else:
-        result = tg('editMessageText', {
-            'chat_id': chat_id,
-            'message_id': message_id,
-            'text': text,
-            'reply_markup': menu
-        })
 
-    # Fallback for messages Telegram does not permit editing.
-    if not result.get('ok'):
-        tg('sendMessage', {
-            'chat_id': chat_id,
-            'text': text,
-            'reply_markup': menu
-        })
+    # Every interaction yields one active bot screen (video or text).
+    replace_screen(chat_id, message_id, 'sendMessage', {
+        'text': text,
+        'reply_markup': menu
+    })
 
 
 @app.get('/')
