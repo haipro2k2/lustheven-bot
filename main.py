@@ -16,10 +16,106 @@ API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}'
 SESSION = requests.Session()
 
 LANGUAGES = {
-    'en': {'title': 'Welcome, {name}! 👋\n\nDiscover our Premium channel and available membership options.\n\n⭐ Lifetime access: $20', 'demo': '🎬 View demo', 'card': '💳 Card / Apple Pay', 'crypto': '💠 Crypto', 'back': '⬅️ Back', 'card_info': 'Contact our manager to request card payment instructions.', 'crypto_info': 'Contact our manager to request cryptocurrency payment instructions.', 'contact': '✉️ Contact manager', 'invoice': 'Hello! I would like to request payment instructions for lifetime access by card.', 'crypto_request': 'Hello! I would like to request payment instructions for lifetime access by crypto.'},
-    'es': {'title': '¡Hola, {name}! 👋\n\nDescubre nuestro canal Premium y las opciones de membresía.\n\n⭐ Acceso de por vida: 20 USD', 'demo': '🎬 Ver demostración', 'card': '💳 Tarjeta / Apple Pay', 'crypto': '💠 Cripto', 'back': '⬅️ Volver', 'card_info': 'Contacta al administrador para solicitar instrucciones de pago con tarjeta.', 'crypto_info': 'Contacta al administrador para solicitar instrucciones de pago con criptomonedas.', 'contact': '✉️ Contactar al administrador', 'invoice': 'Hola. Quiero solicitar instrucciones de pago con tarjeta.', 'crypto_request': 'Hola. Quiero solicitar instrucciones de pago con criptomonedas.'},
-    'fr': {'title': 'Bonjour, {name} ! 👋\n\nDécouvrez notre chaîne Premium et les formules disponibles.\n\n⭐ Accès à vie : 20 USD', 'demo': '🎬 Voir la démo', 'card': '💳 Carte / Apple Pay', 'crypto': '💠 Crypto', 'back': '⬅️ Retour', 'card_info': 'Contactez notre responsable pour obtenir les instructions de paiement par carte.', 'crypto_info': 'Contactez notre responsable pour obtenir les instructions de paiement en cryptomonnaie.', 'contact': '✉️ Contacter le responsable', 'invoice': 'Bonjour ! Je souhaite recevoir les instructions de paiement par carte.', 'crypto_request': 'Bonjour ! Je souhaite recevoir les instructions de paiement en cryptomonnaie.'},
-    'pt': {'title': 'Olá, {name}! 👋\n\nConheça nosso canal Premium e as opções de assinatura.\n\n⭐ Acesso vitalício: US$ 20', 'demo': '🎬 Ver demonstração', 'card': '💳 Cartão / Apple Pay', 'crypto': '💠 Cripto', 'back': '⬅️ Voltar', 'card_info': 'Entre em contato com o administrador para obter instruções de pagamento com cartão.', 'crypto_info': 'Entre em contato com o administrador para obter instruções de pagamento com criptomoedas.', 'contact': '✉️ Falar com o administrador', 'invoice': 'Olá! Gostaria de receber instruções de pagamento por cartão.', 'crypto_request': 'Olá! Gostaria de receber instruções de pagamento por cripto.'}
+    'en': {
+        'title': (
+            "Hello, {name} 👋\n\n"
+            "In the premium channel, you'll find sizzling-hot content from the "
+            "world's most stunning models. Get ready for an exclusive experience like no other!\n\n"
+            "By subscribing, you'll enjoy:\n"
+            "· Regular updates\n"
+            "· Ad-free watching\n"
+            "· Download to watch offline\n"
+            "· High video quality\n"
+            "· Over 40,000 videos and images, updated daily\n"
+            "· Cancel anytime\n\n"
+            "Ready to unlock the forbidden allure?\n"
+            "**Choose your plan 👇**"
+        ), 
+        'demo': '🎬 View demo', 
+        'card': '💳 Card / Apple Pay', 
+        'crypto': '💠 Crypto', 
+        'back': '⬅️ Back', 
+        'card_info': 'Contact our manager to request card payment instructions.', 
+        'crypto_info': 'Contact our manager to request cryptocurrency payment instructions.', 
+        'contact': '✉️ Contact manager', 
+        'invoice': 'Hello! I would like to request payment instructions for lifetime access by card.', 
+        'crypto_request': 'Hello! I would like to request payment instructions for lifetime access by crypto.'
+    },
+    'es': {
+        'title': (
+            "¡Hola, {name} 👋\n\n"
+            "En el canal premium, encontrarás contenido exclusivo de las modelos más impresionantes "
+            "del mundo. ¡Prepárate para una experiencia única!\n\n"
+            "Al suscribirte, disfrutarás de:\n"
+            "· Actualizaciones regulares\n"
+            "· Visualización sin anuncios\n"
+            "· Descarga para ver sin conexión\n"
+            "· Alta calidad de video\n"
+            "· Más de 40.000 vídeos e imágenes, actualizados diariamente\n"
+            "· Cancela cuando quieras\n\n"
+            "¿Listo para desbloquear la atracción prohibida?\n"
+            "**Elige tu plan 👇**"
+        ), 
+        'demo': '🎬 Ver demostración', 
+        'card': '💳 Tarjeta / Apple Pay', 
+        'crypto': '💠 Cripto', 
+        'back': '⬅️ Volver', 
+        'card_info': 'Contacta al administrador para solicitar instrucciones de pago con tarjeta.', 
+        'crypto_info': 'Contacta al administrador para solicitar instrucciones de pago con criptomonedas.', 
+        'contact': '✉️ Contactar al administrador', 
+        'invoice': 'Hola. Quiero solicitar instrucciones de pago con tarjeta.', 
+        'crypto_request': 'Hola. Quiero solicitar instrucciones de pago con criptomonedas.'
+    },
+    'fr': {
+        'title': (
+            "Bonjour, {name} 👋\n\n"
+            "Sur la chaîne premium, vous trouverez du contenu torve et exclusif des plus "
+            "beaux modèles du monde. Préparez-vous à une expérience unique !\n\n"
+            "En vous abonnant, vous profiterez de :\n"
+            "· Mises à jour régulières\n"
+            "· Visionnage sans publicité\n"
+            "· Téléchargement pour regarder hors ligne\n"
+            "· Haute qualité vidéo\n"
+            "· Plus de 40 000 vidéos et images, mis à jour quotidiennement\n"
+            "· Annulation à tout moment\n\n"
+            "Prêt à débloquer l'attrait interdit ?\n"
+            "**Choisissez votre formule 👇**"
+        ), 
+        'demo': '🎬 Voir la démo', 
+        'card': '💳 Carte / Apple Pay', 
+        'crypto': '💠 Crypto', 
+        'back': '⬅️ Retour', 
+        'card_info': 'Contactez notre responsable pour obtenir les instructions de paiement par carte.', 
+        'crypto_info': 'Contactez notre responsable pour obtenir les instructions de paiement en cryptomonnaie.', 
+        'contact': '✉️ Contacter le responsable', 
+        'invoice': 'Bonjour ! Je souhaite recevoir les instructions de paiement par carte.', 
+        'crypto_request': 'Bonjour ! Je souhaite recevoir les instructions de paiement en cryptomonnaie.'
+    },
+    'pt': {
+        'title': (
+            "Olá, {name} 👋\n\n"
+            "No canal premium, você encontrará conteúdo exclusivo das modelos mais deslumbrantes "
+            "do mundo. Prepare-se para uma experiência única!\n\n"
+            "Ao assinar, você aproveitará:\n"
+            "· Atualizações regulares\n"
+            "· Assistir sem anúncios\n"
+            "· Baixar para assistir offline\n"
+            "· Alta qualidade de vídeo\n"
+            "· Mais de 40.000 vídeos e imagens, atualizados diariamente\n"
+            "· Cancele quando quiser\n\n"
+            "Pronto para desbloquear o fascínio proibido?\n"
+            "**Escolha seu plano 👇**"
+        ), 
+        'demo': '🎬 Ver demonstração', 
+        'card': '💳 Cartão / Apple Pay', 
+        'crypto': '💠 Cripto', 
+        'back': '⬅️ Voltar', 
+        'card_info': 'Entre em contato com o administrador para obter instruções de pagamento com cartão.', 
+        'crypto_info': 'Entre em contato com o administrador para obter instruções de pagamento com criptomoedas.', 
+        'contact': '✉️ Falar com o administrador', 
+        'invoice': 'Olá! Gostaria de receber instruções de pagamento por cartão.', 
+        'crypto_request': 'Olá! Gostaria de receber instruções de pagamento por cripto.'
+    }
 }
 
 
