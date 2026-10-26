@@ -20,7 +20,8 @@ LANGUAGES = {
         'title': (
             "Hello, {name} 👋\n\n"
             "In the premium channel, you'll find sizzling-hot content from the "
-            "world's most stunning models. Get ready for an exclusive experience like no other!\n\n"
+            "stunningly beautiful girls. Get ready for an exclusive experience like no other!\n\n"
+            "⭐ Lifetime access: $20 (Pay once, access forever)\n\n"
             "By subscribing, you'll enjoy:\n"
             "· Regular updates\n"
             "· Ad-free watching\n"
@@ -44,8 +45,9 @@ LANGUAGES = {
     'es': {
         'title': (
             "¡Hola, {name} 👋\n\n"
-            "En el canal premium, encontrarás contenido exclusivo de las modelos más impresionantes "
-            "del mundo. ¡Prepárate para una experiencia única!\n\n"
+            "En el canal premium, encontrarás contenido exclusivo de chicas hermosas e impresionantes. "
+            "¡Prepárate para una experiencia única!\n\n"
+            "⭐ Acceso de por vida: 20 USD (Paga una vez, acceso para siempre)\n\n"
             "Al suscribirte, disfrutarás de:\n"
             "· Actualizaciones regulares\n"
             "· Visualización sin anuncios\n"
@@ -69,8 +71,9 @@ LANGUAGES = {
     'fr': {
         'title': (
             "Bonjour, {name} 👋\n\n"
-            "Sur la chaîne premium, vous trouverez du contenu torve et exclusif des plus "
-            "beaux modèles du monde. Préparez-vous à une expérience unique !\n\n"
+            "Sur la chaîne premium, vous trouverez du contenu torve et exclusif de filles d'une beauté "
+            "éblouissante. Préparez-vous à une expérience unique !\n\n"
+            "⭐ Accès à vie : 20 USD (Payez une fois, accès pour toujours)\n\n"
             "En vous abonnant, vous profiterez de :\n"
             "· Mises à jour régulières\n"
             "· Visionnage sans publicité\n"
@@ -94,8 +97,9 @@ LANGUAGES = {
     'pt': {
         'title': (
             "Olá, {name} 👋\n\n"
-            "No canal premium, você encontrará conteúdo exclusivo das modelos mais deslumbrantes "
-            "do mundo. Prepare-se para uma experiência única!\n\n"
+            "No canal premium, você encontrará conteúdo exclusivo de garotas deslumbrantemente bonitas. "
+            "Prepare-se para uma experiência única!\n\n"
+            "⭐ Acesso vitalício: US$ 20 (Pague uma vez, acesso para sempre)\n\n"
             "Ao assinar, você aproveitará:\n"
             "· Atualizações regulares\n"
             "· Assistir sem anúncios\n"
