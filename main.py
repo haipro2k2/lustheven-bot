@@ -20,17 +20,7 @@ LANGUAGES = {
         'title': (
             "Hello, {name} 👋\n\n"
             "In the premium channel, you'll find sizzling-hot content from the "
-            "stunningly beautiful girls. Get ready for an exclusive experience like no other!\n\n"
-            "⭐ Lifetime access: $20 (Pay once, access forever)\n\n"
-            "By subscribing, you'll enjoy:\n"
-            "· Regular updates\n"
-            "· Ad-free watching\n"
-            "· Download to watch offline\n"
-            "· High video quality\n"
-            "· Over 40,000 videos and images, updated daily\n"
-            "· Cancel anytime\n\n"
-            "Ready to unlock the forbidden allure?\n"
-            "**Choose your plan 👇**"
+          
         ), 
         'demo': '🎬 View demo', 
         'card': '💳 Card / Apple Pay', 
@@ -46,17 +36,7 @@ LANGUAGES = {
         'title': (
             "¡Hola, {name} 👋\n\n"
             "En el canal premium, encontrarás contenido exclusivo de chicas hermosas e impresionantes. "
-            "¡Prepárate para una experiencia única!\n\n"
-            "⭐ Acceso de por vida: 20 USD (Paga una vez, acceso para siempre)\n\n"
-            "Al suscribirte, disfrutarás de:\n"
-            "· Actualizaciones regulares\n"
-            "· Visualización sin anuncios\n"
-            "· Descarga para ver sin conexión\n"
-            "· Alta calidad de video\n"
-            "· Más de 40.000 vídeos e imágenes, actualizados diariamente\n"
-            "· Cancela cuando quieras\n\n"
-            "¿Listo para desbloquear la atracción prohibida?\n"
-            "**Elige tu plan 👇**"
+        
         ), 
         'demo': '🎬 Ver demostración', 
         'card': '💳 Tarjeta / Apple Pay', 
@@ -72,17 +52,7 @@ LANGUAGES = {
         'title': (
             "Bonjour, {name} 👋\n\n"
             "Sur la chaîne premium, vous trouverez du contenu torve et exclusif de filles d'une beauté "
-            "éblouissante. Préparez-vous à une expérience unique !\n\n"
-            "⭐ Accès à vie : 20 USD (Payez une fois, accès pour toujours)\n\n"
-            "En vous abonnant, vous profiterez de :\n"
-            "· Mises à jour régulières\n"
-            "· Visionnage sans publicité\n"
-            "· Téléchargement pour regarder hors ligne\n"
-            "· Haute qualité vidéo\n"
-            "· Plus de 40 000 vidéos et images, mis à jour quotidiennement\n"
-            "· Annulation à tout moment\n\n"
-            "Prêt à débloquer l'attrait interdit ?\n"
-            "**Choisissez votre formule 👇**"
+           
         ), 
         'demo': '🎬 Voir la démo', 
         'card': '💳 Carte / Apple Pay', 
@@ -98,17 +68,7 @@ LANGUAGES = {
         'title': (
             "Olá, {name} 👋\n\n"
             "No canal premium, você encontrará conteúdo exclusivo de garotas deslumbrantemente bonitas. "
-            "Prepare-se para uma experiência única!\n\n"
-            "⭐ Acesso vitalício: US$ 20 (Pague uma vez, acesso para sempre)\n\n"
-            "Ao assinar, você aproveitará:\n"
-            "· Atualizações regulares\n"
-            "· Assistir sem anúncios\n"
-            "· Baixar para assistir offline\n"
-            "· Alta qualidade de vídeo\n"
-            "· Mais de 40.000 vídeos e imagens, atualizados diariamente\n"
-            "· Cancele quando quiser\n\n"
-            "Pronto para desbloquear o fascínio proibido?\n"
-            "**Escolha seu plano 👇**"
+         
         ), 
         'demo': '🎬 Ver demonstração', 
         'card': '💳 Cartão / Apple Pay', 
