@@ -26,7 +26,14 @@ FEEDBACK_SENT_PREFIX = 'lustheven:feedback:sent:'
 
 LANGUAGES = {
     'en': {
-        'title': "Hello, {name} 👋\n\nIn the premium channel, you'll find exclusive content and regular updates.",
+        'title': (
+            "Hello, {name} 👋\n\n"
+            "In the premium channel, you will find exclusive content along with regular updates.\n\n"
+            "For a one-time fee of $20 (a single payment for lifetime access), you will gain entry to 3 groups containing over 50,000 videos; backup groups are also included.\n\n"
+            "Group 1: Leaked content from OnlyFans, featuring popular and trending creators from the platform.\n"
+            "Group 2: Leaked content involving couples from various countries.\n"
+            "Group 3: Content featuring young women (over 18) — including masturbation scenes, webcam sessions, and Omegle-style interactions."
+        ),
         'demo': '🎬 View demo', 'feedback': '⭐ Customer Feedback',
         'feedback_intro': '⭐ Customer Feedback\n\nReal feedback shared by our customers. Thank you for your trust!',
         'feedback_empty': 'Customer feedback is being updated. Please check back soon.',
@@ -38,7 +45,14 @@ LANGUAGES = {
         'crypto_request': 'Hello! I would like to request payment instructions for lifetime access by crypto.'
     },
     'es': {
-        'title': '¡Hola, {name} 👋\n\nEn nuestro canal premium encontrarás contenido exclusivo y actualizaciones periódicas.',
+        'title': (
+            "¡Hola, {name} 👋\n\n"
+            "En el canal premium encontrarás contenido exclusivo junto con actualizaciones periódicas.\n\n"
+            "Por una tarifa única de $20 (un solo pago para acceso de por vida), obtendrás acceso a 3 grupos que contienen más de 50.000 vídeos; también se incluyen grupos de respaldo.\n\n"
+            "Grupo 1: Contenido filtrado de OnlyFans, con creadores populares y en tendencia de la plataforma.\n"
+            "Grupo 2: Contenido filtrado de parejas de varios países.\n"
+            "Grupo 3: Contenido con mujeres jóvenes (mayores de 18 años), incluyendo escenas de masturbación, sesiones de cámara web e interacciones estilo Omegle."
+        ),
         'demo': '🎬 Ver demostración', 'feedback': '⭐ Opiniones de clientes',
         'feedback_intro': '⭐ Opiniones de clientes\n\nOpiniones reales compartidas por nuestros clientes. ¡Gracias por confiar en nosotros!',
         'feedback_empty': 'Estamos actualizando las opiniones de clientes. Vuelve pronto.',
@@ -50,7 +64,14 @@ LANGUAGES = {
         'crypto_request': 'Hola. Quiero solicitar instrucciones de pago con criptomonedas.'
     },
     'fr': {
-        'title': 'Bonjour, {name} 👋\n\nNotre chaîne premium propose du contenu exclusif et des mises à jour régulières.',
+        'title': (
+            "Bonjour, {name} 👋\n\n"
+            "Dans la chaîne premium, vous trouverez du contenu exclusif ainsi que des mises à jour régulières.\n\n"
+            "Pour un tarif unique de 20 $ (un seul paiement pour un accès à vie), vous obtiendrez l'accès à 3 groupes contenant plus de 50 000 vidéos ; des groupes de sauvegarde sont également inclus.\n\n"
+            "Groupe 1 : Contenu divulgué d'OnlyFans, mettant en vedette des créateurs populaires et tendance de la plateforme.\n"
+            "Groupe 2 : Contenu divulgué impliquant des couples de divers pays.\n"
+            "Groupe 3 : Contenu mettant en vedette des jeunes femmes (de plus de 18 ans) — comprenant des scènes de masturbation, des sessions webcam et des interactions de style Omegle."
+        ),
         'demo': '🎬 Voir la démo', 'feedback': '⭐ Avis clients',
         'feedback_intro': '⭐ Avis clients\n\nDécouvrez les avis partagés par nos clients. Merci pour votre confiance !',
         'feedback_empty': 'Les avis clients sont en cours de mise à jour. Revenez bientôt.',
@@ -62,7 +83,14 @@ LANGUAGES = {
         'crypto_request': 'Bonjour ! Je souhaite recevoir les instructions de paiement en cryptomonnaie.'
     },
     'pt': {
-        'title': 'Olá, {name} 👋\n\nNo nosso canal premium você encontrará conteúdo exclusivo e atualizações regulares.',
+        'title': (
+            "Olá, {name} 👋\n\n"
+            "No canal premium, você encontrará conteúdo exclusivo junto com atualizações regulares.\n\n"
+            "Por uma taxa única de $20 (um pagamento único para acesso vitalício), você terá acesso a 3 grupos contendo mais de 50.000 vídeos; grupos de backup também estão incluídos.\n\n"
+            "Grupo 1: Conteúdo vazado do OnlyFans, apresentando criadores populares e em alta na plataforma.\n"
+            "Grupo 2: Conteúdo vazado envolvendo casais de vários países.\n"
+            "Grupo 3: Conteúdo com mulheres jovens (maiores de 18 anos) — incluindo cenas de masturbação, sessões de webcam e interações no estilo Omegle."
+        ),
         'demo': '🎬 Ver demonstração', 'feedback': '⭐ Avaliações de clientes',
         'feedback_intro': '⭐ Avaliações de clientes\n\nVeja avaliações compartilhadas por nossos clientes. Obrigado pela confiança!',
         'feedback_empty': 'As avaliações dos clientes estão sendo atualizadas. Volte em breve.',
@@ -214,7 +242,6 @@ def handle_admin_message(message, sender, chat):
         staged = redis_get_json(stage_key, None)
         if staged is not None:
             file_id = photo[-1]['file_id']
-            # A media-group update may be retried by Telegram; avoid duplicate IDs.
             if file_id not in staged:
                 staged.append(file_id)
                 redis_set_json(stage_key, staged)
@@ -226,17 +253,9 @@ def handle_admin_message(message, sender, chat):
 
 
 def cleanup_feedback_messages(chat_id):
-    """Delete tracked feedback messages concurrently before changing screens.
-
-    Telegram treats every item in a media group as a separate message, so
-    each item still needs its own deleteMessage request. Parallel requests
-    make the transition much faster and reduce the visible one-by-one effect.
-    """
     key = FEEDBACK_SENT_PREFIX + str(chat_id)
     try:
         message_ids = redis_get_json(key, [])
-        # Clear the tracking key first so rapid/duplicate callbacks do not
-        # start another cleanup pass for the same album.
         if message_ids:
             redis_command('DEL', key)
     except Exception:
@@ -275,8 +294,6 @@ def send_feedback(chat_id, old_message_id, lang):
             tg('deleteMessage', {'chat_id': chat_id, 'message_id': old_message_id})
         return
 
-    # Telegram sendMediaGroup accepts 2-10 items. Track every sent message ID
-    # so the album can be removed when the customer goes back or opens another section.
     sent_message_ids = []
     for start in range(0, len(photos), 10):
         batch = photos[start:start + 10]
@@ -348,8 +365,6 @@ def handle_update(update):
     message_id = msg['message_id']
     data = callback.get('data', '')
 
-    # If the customer is leaving the feedback view or opening another section,
-    # remove the previously sent feedback photos to keep the chat tidy.
     cleanup_feedback_messages(chat_id)
 
     if data.startswith('demo_') and data[5:] in LANGUAGES:
@@ -391,7 +406,6 @@ def handle_update(update):
         return
 
     if data.startswith('lang_') and data[5:] in LANGUAGES and WELCOME_VIDEO:
-        # Show the welcome text as the caption of a video immediately above the menu.
         replace_screen(chat_id, message_id, 'sendVideo', {
             'video': WELCOME_VIDEO,
             'caption': text,
