@@ -27,12 +27,12 @@ FEEDBACK_SENT_PREFIX = 'lustheven:feedback:sent:'
 LANGUAGES = {
     'en': {
         'title': (
-            "**Hello, {name} 👋**\n\n"
+            "**Hello**, *{name}* 👋\n\n"
             "In the premium channel, you will find exclusive content along with regular updates.\n\n"
             "**For a one-time fee of $20 (a single payment for lifetime access), you will gain entry to 3 groups containing over 50,000 videos; backup groups are also included.**\n\n"
-            "_Group 1: Leaked content from OnlyFans, featuring popular and trending creators from the platform._\n"
-            "_Group 2: Leaked content involving couples from various countries._\n"
-            "_Group 3: Content featuring young women (over 18) — including masturbation scenes, webcam sessions, and Omegle-style interactions._"
+            "• _Group 1: Leaked content from OnlyFans, featuring popular and trending creators from the platform._\n"
+            "• _Group 2: Leaked content involving couples from various countries._\n"
+            "• _Group 3: Content featuring young women (over 18) — including masturbation scenes, webcam sessions, and Omegle-style interactions._"
         ),
         'demo': '🎬 View demo', 'feedback': '⭐ Customer Feedback',
         'feedback_intro': '⭐ Customer Feedback\n\nReal feedback shared by our customers. Thank you for your trust!',
@@ -46,12 +46,12 @@ LANGUAGES = {
     },
     'es': {
         'title': (
-            "**¡Hola, {name} 👋**\n\n"
+            "**¡Hola**, *{name}* 👋\n\n"
             "En el canal premium encontrarás contenido exclusivo junto con actualizaciones periódicas.\n\n"
             "**Por una tarifa única de $20 (un solo pago para acceso de por vida), obtendrás acceso a 3 grupos que contienen más de 50.000 vídeos; también se incluyen grupos de respaldo.**\n\n"
-            "_Grupo 1: Contenido filtrado de OnlyFans, con creadores populares y en tendencia de la plataforma._\n"
-            "_Grupo 2: Contenido filtrado de parejas de varios países._\n"
-            "_Grupo 3: Contenido con mujeres jóvenes (mayores de 18 años), incluyendo escenas de masturbación, sesiones de cámara web e interacciones estilo Omegle._"
+            "• _Grupo 1: Contenido filtrado de OnlyFans, con creadores populares y en tendencia de la plataforma._\n"
+            "• _Grupo 2: Contenido filtrado de parejas de varios países._\n"
+            "• _Grupo 3: Contenido con mujeres jóvenes (mayores de 18 años), incluyendo escenas de masturbación, sesiones de cámara web e interacciones estilo Omegle._"
         ),
         'demo': '🎬 Ver demostración', 'feedback': '⭐ Opiniones de clientes',
         'feedback_intro': '⭐ Opiniones de clientes\n\nOpiniones reales compartidas por nuestros clientes. ¡Gracias por confiar en nosotros!',
@@ -65,12 +65,12 @@ LANGUAGES = {
     },
     'fr': {
         'title': (
-            "**Bonjour, {name} 👋**\n\n"
+            "**Bonjour**, *{name}* 👋\n\n"
             "Dans la chaîne premium, vous trouverez du contenu exclusif ainsi que des mises à jour régulières.\n\n"
             "**Pour un tarif unique de 20 $ (un seul paiement pour un accès à vie), vous obtiendrez l'accès à 3 groupes contenant plus de 50 000 vidéos ; des groupes de sauvegarde sont également inclus.**\n\n"
-            "_Groupe 1 : Contenu divulgué d'OnlyFans, mettant en vedette des créateurs populaires et tendance de la plateforme._\n"
-            "_Groupe 2 : Contenu divulgué impliquant des couples de divers pays._\n"
-            "_Groupe 3 : Contenu mettant en vedette des jeunes femmes (de plus de 18 ans) — comprenant des scènes de masturbation, des sessions webcam et des interactions de style Omegle._"
+            "• _Groupe 1 : Contenu divulgué d'OnlyFans, mettant en vedette des créateurs populaires et tendance de la plateforme._\n"
+            "• _Groupe 2 : Contenu divulgué impliquant des couples de divers pays._\n"
+            "• _Groupe 3 : Contenu mettant en vedette des jeunes femmes (de plus de 18 ans) — comprenant des scènes de masturbation, des sessions webcam et des interactions de style Omegle._"
         ),
         'demo': '🎬 Voir la démo', 'feedback': '⭐ Avis clients',
         'feedback_intro': '⭐ Avis clients\n\nDécouvrez les avis partagés par nos clients. Merci pour votre confiance !',
@@ -84,12 +84,12 @@ LANGUAGES = {
     },
     'pt': {
         'title': (
-            "**Olá, {name} 👋**\n\n"
+            "**Olá**, *{name}* 👋\n\n"
             "No canal premium, você encontrará conteúdo exclusivo junto com atualizações regulares.\n\n"
             "**Por uma taxa única de $20 (um pagamento único para acesso vitalício), você terá acesso a 3 grupos contendo mais de 50.000 vídeos; grupos de backup também estão incluídos.**\n\n"
-            "_Grupo 1: Conteúdo vazado do OnlyFans, apresentando criadores populares e em alta na plataforma._\n"
-            "_Grupo 2: Conteúdo vazado envolvendo casais de vários países._\n"
-            "_Grupo 3: Conteúdo com mulheres jovens (maiores de 18 anos) — incluindo cenas de masturbação, sessões de webcam e interações no estilo Omegle._"
+            "• _Grupo 1: Conteúdo vazado do OnlyFans, apresentando criadores populares e em alta na plataforma._\n"
+            "• _Grupo 2: Conteúdo vazado envolvendo casais de vários países._\n"
+            "• _Grupo 3: Conteúdo com mulheres jovens (maiores de 18 anos) — incluindo cenas de masturbação, sessões de webcam e interações no estilo Omegle._"
         ),
         'demo': '🎬 Ver demonstração', 'feedback': '⭐ Avaliações de clientes',
         'feedback_intro': '⭐ Avaliações de clientes\n\nVeja avaliações compartilhadas por nossos clientes. Obrigado pela confiança!',
@@ -188,7 +188,6 @@ def payment_menu(lang, method):
 
 
 def replace_screen(chat_id, old_message_id, method, payload):
-    # Nếu dùng Markdown (để in đậm/in nghiêng), thêm parse_mode='Markdown' vào payload nếu chưa có
     payload.setdefault('parse_mode', 'Markdown')
     result = tg(method, dict(payload, chat_id=chat_id))
     if result.get('ok'):
