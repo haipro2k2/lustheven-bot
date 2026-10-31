@@ -2,6 +2,7 @@ import json
 import logging
 import os
 import urllib.parse
+from concurrent.futures import ThreadPoolExecutor
 from flask import Flask, jsonify, request
 import requests
 
@@ -225,22 +226,34 @@ def handle_admin_message(message, sender, chat):
 
 
 def cleanup_feedback_messages(chat_id):
-    """Delete feedback photos previously sent to this chat."""
+    """Delete tracked feedback messages concurrently before changing screens.
+
+    Telegram treats every item in a media group as a separate message, so
+    each item still needs its own deleteMessage request. Parallel requests
+    make the transition much faster and reduce the visible one-by-one effect.
+    """
     key = FEEDBACK_SENT_PREFIX + str(chat_id)
     try:
         message_ids = redis_get_json(key, [])
+        # Clear the tracking key first so rapid/duplicate callbacks do not
+        # start another cleanup pass for the same album.
+        if message_ids:
+            redis_command('DEL', key)
     except Exception:
-        logger.exception('Could not read sent feedback message IDs')
+        logger.exception('Could not read/clear sent feedback message IDs')
         return
 
-    for message_id in message_ids:
-        tg('deleteMessage', {'chat_id': chat_id, 'message_id': message_id})
+    if not message_ids:
+        return
 
-    if message_ids:
-        try:
-            redis_command('DEL', key)
-        except Exception:
-            logger.exception('Could not clear sent feedback message IDs')
+    def delete_one(message_id):
+        return tg('deleteMessage', {
+            'chat_id': chat_id,
+            'message_id': message_id
+        })
+
+    with ThreadPoolExecutor(max_workers=min(10, len(message_ids))) as executor:
+        list(executor.map(delete_one, message_ids))
 
 
 def send_feedback(chat_id, old_message_id, lang):
