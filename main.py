@@ -14,12 +14,14 @@ WEBHOOK_SECRET = os.environ.get('WEBHOOK_SECRET', '').strip()
 ADMIN_USERNAME = os.environ.get('ADMIN_USERNAME', '').strip().lstrip('@')
 ADMIN_USER_ID = os.environ.get('ADMIN_USER_ID', '').strip()
 DEMO_VIDEO = os.environ.get('DEMO_VIDEO_FILE_ID', '').strip() or os.environ.get('DEMO_VIDEO_URL', '').strip()
+WELCOME_VIDEO = os.environ.get('WELCOME_VIDEO_FILE_ID', '').strip() or DEMO_VIDEO
 UPSTASH_REDIS_REST_URL = os.environ.get('UPSTASH_REDIS_REST_URL', '').strip().rstrip('/')
 UPSTASH_REDIS_REST_TOKEN = os.environ.get('UPSTASH_REDIS_REST_TOKEN', '').strip()
 API_URL = f'https://api.telegram.org/bot{BOT_TOKEN}'
 SESSION = requests.Session()
 FEEDBACK_KEY = 'lustheven:feedback:photos'
 FEEDBACK_STAGE_PREFIX = 'lustheven:feedback:stage:'
+FEEDBACK_SENT_PREFIX = 'lustheven:feedback:sent:'
 
 LANGUAGES = {
     'en': {
@@ -222,6 +224,25 @@ def handle_admin_message(message, sender, chat):
     return False
 
 
+def cleanup_feedback_messages(chat_id):
+    """Delete feedback photos previously sent to this chat."""
+    key = FEEDBACK_SENT_PREFIX + str(chat_id)
+    try:
+        message_ids = redis_get_json(key, [])
+    except Exception:
+        logger.exception('Could not read sent feedback message IDs')
+        return
+
+    for message_id in message_ids:
+        tg('deleteMessage', {'chat_id': chat_id, 'message_id': message_id})
+
+    if message_ids:
+        try:
+            redis_command('DEL', key)
+        except Exception:
+            logger.exception('Could not clear sent feedback message IDs')
+
+
 def send_feedback(chat_id, old_message_id, lang):
     t = LANGUAGES[lang]
     try:
@@ -241,21 +262,33 @@ def send_feedback(chat_id, old_message_id, lang):
             tg('deleteMessage', {'chat_id': chat_id, 'message_id': old_message_id})
         return
 
-    # Telegram sendMediaGroup accepts 2-10 items. Send a single photo with sendPhoto.
-    first_ok = False
+    # Telegram sendMediaGroup accepts 2-10 items. Track every sent message ID
+    # so the album can be removed when the customer goes back or opens another section.
+    sent_message_ids = []
     for start in range(0, len(photos), 10):
         batch = photos[start:start + 10]
         if len(batch) == 1:
             result = tg('sendPhoto', {'chat_id': chat_id, 'photo': batch[0]})
+            if result.get('ok'):
+                sent_message_ids.append(result.get('result', {}).get('message_id'))
         else:
             media = [{'type': 'photo', 'media': file_id} for file_id in batch]
             result = tg('sendMediaGroup', {'chat_id': chat_id, 'media': media})
+            if result.get('ok'):
+                sent_message_ids.extend(
+                    item.get('message_id') for item in result.get('result', [])
+                    if item.get('message_id') is not None
+                )
         if not result.get('ok'):
             logger.error('Could not send feedback album')
-            if not first_ok:
+            if not sent_message_ids:
                 return
-        else:
-            first_ok = True
+
+    if sent_message_ids:
+        try:
+            redis_set_json(FEEDBACK_SENT_PREFIX + str(chat_id), sent_message_ids)
+        except Exception:
+            logger.exception('Could not save sent feedback message IDs')
 
     screen = tg('sendMessage', {
         'chat_id': chat_id,
@@ -302,6 +335,10 @@ def handle_update(update):
     message_id = msg['message_id']
     data = callback.get('data', '')
 
+    # If the customer is leaving the feedback view or opening another section,
+    # remove the previously sent feedback photos to keep the chat tidy.
+    cleanup_feedback_messages(chat_id)
+
     if data.startswith('demo_') and data[5:] in LANGUAGES:
         lang = data[5:]
         if not DEMO_VIDEO:
@@ -340,7 +377,16 @@ def handle_update(update):
     else:
         return
 
-    replace_screen(chat_id, message_id, 'sendMessage', {'text': text, 'reply_markup': menu})
+    if data.startswith('lang_') and data[5:] in LANGUAGES and WELCOME_VIDEO:
+        # Show the welcome text as the caption of a video immediately above the menu.
+        replace_screen(chat_id, message_id, 'sendVideo', {
+            'video': WELCOME_VIDEO,
+            'caption': text,
+            'supports_streaming': True,
+            'reply_markup': menu
+        })
+    else:
+        replace_screen(chat_id, message_id, 'sendMessage', {'text': text, 'reply_markup': menu})
 
 
 @app.get('/')
